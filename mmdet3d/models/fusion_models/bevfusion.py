@@ -78,6 +78,14 @@ class BEVFusion(Base3DFusionModel):
             for name in heads:
                 if heads[name] is not None:
                     self.loss_scale[name] = 1.0
+        # TODO: complete the below code            
+        if "ssl" in kwargs:
+            self.ssl = kwargs["ssl"]
+            if self.ssl:
+                self.lidar_projector = build_projector()
+                self.camera_projector = build_projector()
+                from torchvision.ops import RoIAlign
+                self.roi_align = RoIAlign(spatial_scale=0.125,output_size=(7,7)) 
 
         self.init_weights()
 
@@ -252,6 +260,14 @@ class BEVFusion(Base3DFusionModel):
             # avoid OOM
             features = features[::-1]
 
+        ##TODO: add pretraining logic here
+        if self.ssl:
+            ##TODO:ROI align here
+            # self.projector_camera 
+            # self.projector_lidar
+            ## maybe use some cross attention here
+            pass
+        ###############################
         if self.fuser is not None:
             x = self.fuser(features)
         else:

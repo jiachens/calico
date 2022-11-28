@@ -21,3 +21,5 @@ RUN pip install mmcv==1.4.0 mmcv-full==1.4.0 mmdet==2.20.0
 RUN pip install nuscenes-devkit
 RUN pip install mpi4py==3.0.3
 RUN pip install numba==0.48.0
+RUN pip install open3d
+RUN pip install horovod
