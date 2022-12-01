@@ -2,27 +2,30 @@ import numpy as np
 import open3d as o3d
 from time import time
 import cv2
+from shapely.geometry import MultiPoint
 
 
-def get_detection_from_segmentation(pcd, object_segments):
-    detections = []
-    for object_segment in object_segments:
-        object_points = pcd[object_segment]
-        cnt = object_points[:,:2].reshape((-1,1,2)).astype(np.float32)
-        box = cv2.minAreaRect(cnt)
-        detections.append(list(box[0]))
-    detections = np.array(detections)
-    return detections
+def points_to_bbox(points): 
+    bbox = MultiPoint(points[:,:2]).bounds
+    return bbox
 
+def generate_bbox(pointcloud_segments):
+    bboxes = [np.array(points_to_bbox(segment)) for segment in pointcloud_segments]
+    return bboxes
 
-def filter_segmentation(pointcloud_segments, in_lane_mask=None, point_height=None):
+def filter_segmentation(pointcloud_segments, in_lane_mask=None, point_height=None, lidar_height=1.84):
     object_segments = []
     for pointcloud_segment in pointcloud_segments:
         polygon = points_to_polygon(pointcloud_segment[:,:2])
-        print(polygon)
-        if polygon.area > 20:
+        cnt = pointcloud_segment[:,:2].reshape((-1,1,2)).astype(np.float32)
+        _,ret,_ = cv2.minAreaRect(cnt)
+        if max(np.abs(pointcloud_segment[:,1])) < 1.5 or max(np.abs(pointcloud_segment[:,0])) < 1.5: ## filter out ego vehicle
             continue
-        if polygon.area < 0.5:
+        if max(pointcloud_segment[:,2]) < -lidar_height + 0.25: ## too close to the ground
+            continue
+        if min(ret)/max(ret) < 0.1: ## too thin to be an object
+            continue
+        if polygon.area > 20: ## too large area usually means the segment is not a object
             continue
         if in_lane_mask is not None:
             #TODO 
@@ -36,22 +39,10 @@ def numpy_to_open3d(data):
     pcd.paint_uniform_color([0, 0, 1])
     return pcd
 
-def sort_points(pcd):
-    rings = pcd[:, 4].astype(np.int32)
-    distance = np.sqrt(np.sum(pcd[:,:2] ** 2, axis=1))
-    # Vertical angle
-    v_angle = np.arctan2(distance, -pcd[:,2])
-    # Horizontal angle
-    h_angle = np.arctan2(pcd[:, 0], pcd[:, 1])
 
-    points_stack = []
-    for ring_id in np.sort(np.unique(rings)):
-        ring_indices = np.argwhere(rings == ring_id).reshape(-1)
-        ring_h_angle = h_angle[ring_indices]
-        ring_shuffle_indices = np.argsort(ring_h_angle)
-        points_stack.append(pcd[ring_indices][ring_shuffle_indices])
-    return np.vstack(points_stack)
-
+'''
+open3d version of dbscan
+'''
 def lidar_segmentation_dbscan(full_pcd, ground_indices, cluster_thres=0.75, min_point_num=8):
     non_ground_mask = np.ones(full_pcd.shape[0]).astype(bool)
     non_ground_mask[ground_indices] = False
@@ -71,6 +62,30 @@ def lidar_segmentation_dbscan(full_pcd, ground_indices, cluster_thres=0.75, min_
 
     return {"info": info}
 
+
+
+'''
+preprocessing for slr code
+'''
+def sort_points(pcd):
+    rings = pcd[:, 4].astype(np.int32)
+    distance = np.sqrt(np.sum(pcd[:,:2] ** 2, axis=1))
+    # Vertical angle
+    v_angle = np.arctan2(distance, -pcd[:,2])
+    # Horizontal angle
+    h_angle = np.arctan2(pcd[:, 0], pcd[:, 1])
+
+    points_stack = []
+    for ring_id in np.sort(np.unique(rings)):
+        ring_indices = np.argwhere(rings == ring_id).reshape(-1)
+        ring_h_angle = h_angle[ring_indices]
+        ring_shuffle_indices = np.argsort(ring_h_angle)
+        points_stack.append(pcd[ring_indices][ring_shuffle_indices])
+    return np.vstack(points_stack)
+
+'''
+slr code, not used in this project due to poor performance
+'''
 def lidar_segmentation_slr(full_pcd, ground_indices, cluster_thres=0.5, min_num_points=10):
     non_ground_mask = np.ones(full_pcd.shape[0]).astype(bool)
     non_ground_mask[ground_indices] = False
@@ -151,11 +166,11 @@ if __name__ == '__main__':
         lidar_data = nusc.get('sample_data', my_sample['data']['LIDAR_TOP'])
         pcd_path = os.path.join(nusc.dataroot, lidar_data['filename'])
         pointcloud = np.fromfile(pcd_path, dtype=np.float32).reshape((-1, 5))
-        pointcloud = sort_points(pointcloud)
         _, inlier = get_ground_plane_grf(pointcloud)
         ret = lidar_segmentation_dbscan(pointcloud, inlier)
         pointcloud_segments = []
         for indice in ret['info']:
             pointcloud_segments.append(pointcloud[indice['indices']])
         pointcloud_segments = filter_segmentation(pointcloud_segments)
-        draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,save='./data/temp_test/segments_'+str(index)+'.png')
+        bboxes = generate_bbox(pointcloud_segments)
+        draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')

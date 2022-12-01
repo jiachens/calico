@@ -261,12 +261,12 @@ class BEVFusion(Base3DFusionModel):
             features = features[::-1]
 
         ##TODO: add pretraining logic here
-        if self.ssl:
-            ##TODO:ROI align here
-            # self.projector_camera 
-            # self.projector_lidar
-            ## maybe use some cross attention here
-            pass
+        # if self.ssl:
+        #     ##TODO:ROI align here
+        #     # self.projector_camera 
+        #     # self.projector_lidar
+        #     ## maybe use some cross attention here
+        #     pass
         ###############################
         if self.fuser is not None:
             x = self.fuser(features)

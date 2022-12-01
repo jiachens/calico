@@ -141,6 +141,9 @@ class GlobalRotScaleTrans:
                 data["points"].rotate(-theta)
                 data["points"].translate(translation)
                 data["points"].scale(scale)
+            if "semantic_objects" in data:
+                #TODO
+                pass
 
             gt_boxes = data["gt_bboxes_3d"]
             rotation = rotation @ gt_boxes.rotate(theta).numpy()
