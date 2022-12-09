@@ -161,11 +161,14 @@ if __name__ == '__main__':
     for index in range(0, 10):
         my_scene = nusc.scene[index]
         first_sample_token = my_scene['first_sample_token']
+        # my_sample = nusc.sample[index]
         nusc.render_sample(first_sample_token,out_path='./data/temp_test/render_'+str(index)+'.png',verbose=False)
         my_sample = nusc.get('sample', first_sample_token)
         lidar_data = nusc.get('sample_data', my_sample['data']['LIDAR_TOP'])
         pcd_path = os.path.join(nusc.dataroot, lidar_data['filename'])
         pointcloud = np.fromfile(pcd_path, dtype=np.float32).reshape((-1, 5))
+        # pcl, _ = LidarPointCloud.from_file_multisweep(nusc, my_sample, 'LIDAR_TOP', 'LIDAR_TOP', nsweeps=9)
+        # pointcloud = pcl.points.T
         _, inlier = get_ground_plane_grf(pointcloud)
         ret = lidar_segmentation_dbscan(pointcloud, inlier)
         pointcloud_segments = []

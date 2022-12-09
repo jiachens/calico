@@ -4,7 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 import matplotlib
 import os
-from .utils import *
+from  calico_tools.visualize.utils import *
 
 def draw_bbox_2d(ax, bboxes_id_color):
     for bboxes, bboxes_ids, color in bboxes_id_color:
@@ -33,7 +33,7 @@ def draw_matplotlib(pointclouds, gt_bboxes=None, pred_bboxes=None, gt_bboxes_ids
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
-    ax.scatter(pointcloud_all[:,0], pointcloud_all[:,1], s=25, c="blue")
+    ax.scatter(pointcloud_all[:,0], pointcloud_all[:,1], s=2.5, c="blue")
 
     total_bboxes = []
     if gt_bboxes is not None:
@@ -84,9 +84,9 @@ def draw_mutlti_cluster_polygon_matplotlib(pointclouds, show=False, bboxes=None,
     ax.set_ylim(ylim)
     for pointcloud in pointclouds:
         ax.scatter(pointcloud[:,0], pointcloud[:,1], s=25)
-        area = points_to_polygon(pointcloud[:, :3])
-        x, y = area.exterior.coords.xy
-        plt.plot(x, y, "r", alpha=0.8)
+        # area = points_to_polygon(pointcloud[:, :3])
+        # x, y = area.exterior.coords.xy
+        # plt.plot(x, y, "r", alpha=0.8)
     if bboxes is not None:
         draw_simplified_bbox_2d(ax, bboxes)
     if show:
@@ -98,6 +98,11 @@ def draw_mutlti_cluster_polygon_matplotlib(pointclouds, show=False, bboxes=None,
 
 
 if __name__ == '__main__':
+    from nuscenes.nuscenes import NuScenes
     from nuscenes.utils.data_classes import LidarPointCloud
-    pointcloud = LidarPointCloud.from_file("./data/nuscenes/samples/LIDAR_TOP/n015-2018-11-21-19-38-26+0800__LIDAR_TOP__1542800543047452.pcd.bin")
-    draw_matplotlib(pointcloud.points.T, save="./data/test.png")
+    import os.path as osp
+    nusc = NuScenes(version='v1.0-mini', dataroot='./data/testdata/', verbose=True)
+    sample = nusc.sample[1]
+    pcl, _ = LidarPointCloud.from_file_multisweep(nusc, sample, 'LIDAR_TOP', 'LIDAR_TOP', nsweeps=9)
+    print(pcl.points.shape)
+    draw_matplotlib(pcl.points.T, save="./data/test.png")
