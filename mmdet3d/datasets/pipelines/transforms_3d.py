@@ -452,7 +452,7 @@ class PointShuffle:
         data["points"].shuffle()
         return data
 
-
+#TODO
 @PIPELINES.register_module()
 class ObjectRangeFilter:
     """Filter objects by the range.
@@ -494,6 +494,11 @@ class ObjectRangeFilter:
         data["gt_bboxes_3d"] = gt_bboxes_3d
         data["gt_labels_3d"] = gt_labels_3d
 
+        if "pooled_bbox" in data.keys():
+            pooled_bbox = data["pooled_bbox"]
+            #TODO
+            data["pooled_bbox"] = pooled_bbox
+
         return data
 
     def __repr__(self):
@@ -501,6 +506,14 @@ class ObjectRangeFilter:
         repr_str = self.__class__.__name__
         repr_str += f"(point_cloud_range={self.pcd_range.tolist()})"
         return repr_str
+
+#TODO
+@PIPELINES.register_module()
+class BBoxTransformer:
+    def __init__(self, voxel_size):
+        self.voxel_size = voxel_size
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        pass
 
 
 @PIPELINES.register_module()

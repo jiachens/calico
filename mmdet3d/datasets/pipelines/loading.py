@@ -307,14 +307,55 @@ class LoadBEVSegmentation:
         data["gt_masks_bev"] = labels
         return data
 
+#TODO
 @PIPELINES.register_module()
-class LoadSemanticPooledObjects:
-    def __init__(self):
+class LoadPooledBBox:
+    '''
+    Load semantic pooled bbox from file
+    or 
+    Generate pooled bbox randomly
+    '''
+    def __init__(self, num_bbox=10, method='semantic'):
+        self.num_bbox = num_bbox
+        self.method = method
+
+    def _load_bbox(self, bbox_path):
+        """Private function to load semantic pooled bbox.
+        Args:
+            bbox_path (str): Filename of semantic pooled bbox.
+        Returns:
+            np.ndarray: An array containing semantic pooled bbox.
+        """
+        mmcv.check_file_exist(bbox_path)
+        if bbox_path.endswith(".npy"):
+            objects = np.load(bbox_path)
+        else:
+            objects = np.fromfile(bbox_path, dtype=np.float32)
+        return objects
+    
+    def _generate_bbox(self):
+        """
+        Private function to generate random pooled bbox.
+        """
         pass
-    def __call__(self, *args: Any, **kwds: Any):
-        pass
-    def __repr__(self):
-        pass
+
+    def __call__(self, results):
+        if self.method == "semantic":
+            lidar_path = results["lidar_path"]
+            bbox_path = lidar_path.replace("LIDAR_TOP", "POOLED_BBOX")
+            ##TODO: make it more general
+            bbox_path = bbox_path.replace("pcd.bin", "npy")
+            bbox = self._load_bbox(bbox_path)
+            if self.num_bbox > bbox.shape[0]:
+                pass
+            else:
+                np.random.shuffle(bbox)
+                bbox = bbox[:self.num_bbox]
+            results['pooledbbox'] = bbox
+        elif self.method == 'random':
+            raise NotImplementedError
+        
+        return results
 
 @PIPELINES.register_module()
 class LoadPointsFromFile:
