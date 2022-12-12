@@ -191,7 +191,7 @@ if __name__ == '__main__':
     os.makedirs(bbox_path,exist_ok=True)
 
     for index in range(0, len(nusc.sample)):
-        time_s = time()
+        # time_s = time()
         my_sample = nusc.sample[index]
         # nusc.render_sample(my_sample['token'],out_path='./data/temp_test/render_'+str(index)+'.png',verbose=False)
         lidar_data = nusc.get('sample_data', my_sample['data']['LIDAR_TOP'])
