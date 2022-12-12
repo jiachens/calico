@@ -10,7 +10,7 @@ def points_to_bbox(points):
     return bbox
 
 def generate_bbox(pointcloud_segments):
-    bboxes = [np.array(points_to_bbox(segment)) for segment in pointcloud_segments]
+    bboxes = np.array([points_to_bbox(segment) for segment in pointcloud_segments])
     return bboxes
 
 def filter_segmentation(pointcloud_segments, in_lane_mask=None, point_height=None, lidar_height=1.84):
@@ -23,12 +23,12 @@ def filter_segmentation(pointcloud_segments, in_lane_mask=None, point_height=Non
             continue
         if max(pointcloud_segment[:,2]) < -lidar_height + 0.25: ## too close to the ground
             continue
-        if min(ret)/max(ret) < 0.1: ## too thin to be an object
+        if max(ret) == 0 or min(ret)/max(ret) < 0.1: ## too thin to have rich context
             continue
         if polygon.area > 20: ## too large area usually means the segment is not a object
             continue
         if in_lane_mask is not None:
-            #TODO 
+            #TODO on-road objects filtering
             pass
         object_segments.append(pointcloud_segment)
     return object_segments
@@ -43,7 +43,7 @@ def numpy_to_open3d(data):
 '''
 open3d version of dbscan
 '''
-def lidar_segmentation_dbscan(full_pcd, ground_indices, cluster_thres=0.75, min_point_num=8):
+def lidar_segmentation_dbscan(full_pcd, ground_indices, cluster_thres=0.75, min_point_num=5):
     non_ground_mask = np.ones(full_pcd.shape[0]).astype(bool)
     non_ground_mask[ground_indices] = False
     non_ground_indices = np.argwhere(non_ground_mask > 0).reshape(-1)
@@ -64,6 +64,7 @@ def lidar_segmentation_dbscan(full_pcd, ground_indices, cluster_thres=0.75, min_
 
 
 
+##TODO: remove the following code in the end
 '''
 preprocessing for slr code
 '''
@@ -157,18 +158,22 @@ if __name__ == '__main__':
     from calico_tools.visualize.general import draw_multi_cluster_matplotlib, draw_matplotlib, draw_mutlti_cluster_polygon_matplotlib
     from calico_tools.visualize.utils import *
     from nuscenes.nuscenes import NuScenes
-    nusc = NuScenes(version='v1.0-mini', dataroot='./data/testdata/', verbose=True)
-    for index in range(0, 10):
-        my_scene = nusc.scene[index]
-        first_sample_token = my_scene['first_sample_token']
-        # my_sample = nusc.sample[index]
-        nusc.render_sample(first_sample_token,out_path='./data/temp_test/render_'+str(index)+'.png',verbose=False)
-        my_sample = nusc.get('sample', first_sample_token)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataroot', type=str, default='./data/nuscenes/', help='path to nuscenes dataset')
+    args = parser.parse_args()
+       
+    nusc = NuScenes(version='v1.0-trainval', dataroot=args.dataroot, verbose=True)
+    bbox_path = os.path.join(args.dataroot,'samples/POOLED_BBOX')
+    os.makedirs(bbox_path,exist_ok=True)
+
+    for index in range(0, len(nusc.sample)):
+        # time_s = time()
+        my_sample = nusc.sample[index]
+        # nusc.render_sample(my_sample['token'],out_path='./data/temp_test/render_'+str(index)+'.png',verbose=False)
         lidar_data = nusc.get('sample_data', my_sample['data']['LIDAR_TOP'])
         pcd_path = os.path.join(nusc.dataroot, lidar_data['filename'])
         pointcloud = np.fromfile(pcd_path, dtype=np.float32).reshape((-1, 5))
-        # pcl, _ = LidarPointCloud.from_file_multisweep(nusc, my_sample, 'LIDAR_TOP', 'LIDAR_TOP', nsweeps=9)
-        # pointcloud = pcl.points.T
         _, inlier = get_ground_plane_grf(pointcloud)
         ret = lidar_segmentation_dbscan(pointcloud, inlier)
         pointcloud_segments = []
@@ -176,4 +181,5 @@ if __name__ == '__main__':
             pointcloud_segments.append(pointcloud[indice['indices']])
         pointcloud_segments = filter_segmentation(pointcloud_segments)
         bboxes = generate_bbox(pointcloud_segments)
-        draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
+        print(str(pcd_path))
+        # draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
