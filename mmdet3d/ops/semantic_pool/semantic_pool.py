@@ -63,6 +63,29 @@ def lidar_segmentation_dbscan(full_pcd, ground_indices, cluster_thres=0.75, min_
     return {"info": info}
 
 
+'''
+sklearn version of dbscan
+'''
+def lidar_segmentation_dbscan_sklearn(full_pcd, ground_indices, cluster_thres=0.75, min_point_num=5):
+    from sklearn.cluster import DBSCAN
+    non_ground_mask = np.ones(full_pcd.shape[0]).astype(bool)
+    non_ground_mask[ground_indices] = False
+    non_ground_indices = np.argwhere(non_ground_mask > 0).reshape(-1)
+    pcd = full_pcd[non_ground_mask,:3]
+    print(pcd.shape)
+    clustering = DBSCAN(eps=cluster_thres, min_samples=min_point_num).fit(pcd)
+    labels = clustering.labels_
+    info = []
+    for label in np.unique(labels):
+        if label == -1:
+            continue
+        indices = np.argwhere(labels == label).reshape(-1)
+        info.append({
+            "indices": non_ground_indices[indices]
+        })
+
+    return {"info": info}
+
 
 ##TODO: remove the following code in the end
 '''
@@ -168,18 +191,21 @@ if __name__ == '__main__':
     os.makedirs(bbox_path,exist_ok=True)
 
     for index in range(0, len(nusc.sample)):
-        # time_s = time()
+        time_s = time()
         my_sample = nusc.sample[index]
         # nusc.render_sample(my_sample['token'],out_path='./data/temp_test/render_'+str(index)+'.png',verbose=False)
         lidar_data = nusc.get('sample_data', my_sample['data']['LIDAR_TOP'])
         pcd_path = os.path.join(nusc.dataroot, lidar_data['filename'])
         pointcloud = np.fromfile(pcd_path, dtype=np.float32).reshape((-1, 5))
         _, inlier = get_ground_plane_grf(pointcloud)
-        ret = lidar_segmentation_dbscan(pointcloud, inlier)
+        ret = lidar_segmentation_dbscan_sklearn(pointcloud, inlier)
         pointcloud_segments = []
         for indice in ret['info']:
             pointcloud_segments.append(pointcloud[indice['indices']])
         pointcloud_segments = filter_segmentation(pointcloud_segments)
         bboxes = generate_bbox(pointcloud_segments)
-        print(str(pcd_path))
+        bbox_path = str(pcd_path).replace('LIDAR_TOP','POOLED_BBOX')
+        bbox_path = bbox_path.replace('pcd.bin','npy')
+        # print(time()-time_s)
+        np.save(bbox_path,bboxes)
         # draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
