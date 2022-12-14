@@ -261,7 +261,7 @@ class BEVFusion(Base3DFusionModel):
         if not self.training:
             # avoid OOM
             features = features[::-1]
-
+        print(pooled_bbox,pooled_bbox.shape)
         ##TODO: add pretraining logic here
         # if self.ssl:
         #     ##TODO:ROI align here
