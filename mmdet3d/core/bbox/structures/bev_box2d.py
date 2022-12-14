@@ -55,10 +55,10 @@ class BEVBox2D:
         corner_right_bottem = corner_right_bottem @ rot_mat_T
         corner_right_top = corner_right_top @ rot_mat_T
 
-        self.tensor[:,0] = torch.minimum(corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0])
-        self.tensor[:,1] = torch.minimum(corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1])
-        self.tensor[:,2] = torch.maximum(corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0])
-        self.tensor[:,3] = torch.maximum(corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1])
+        self.tensor[:,0],_ = torch.min(torch.stack([corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0]]),dim=0)
+        self.tensor[:,1],_ = torch.min(torch.stack([corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1]]),dim=0)
+        self.tensor[:,2],_ = torch.min(torch.stack([corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0]]),dim=0)
+        self.tensor[:,3],_ = torch.min(torch.stack([corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1]]),dim=0)
         # return rot_mat_T
 
     def scale(self,scale_factor):
