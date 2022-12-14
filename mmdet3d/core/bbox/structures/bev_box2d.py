@@ -21,8 +21,11 @@ class BEVBox2D:
 
     @property
     def corners(self):
-        self.tensor.new_tensor()
-        return
+        corner_left_bottem = self.tensor[:,:2]
+        corner_left_top = torch.cat((self.tensor[:,0], self.tensor[:,3]), dim=1)
+        corner_right_bottem = torch.cat((self.tensor[:,2], self.tensor[:,1]), dim=1) 
+        corner_right_top = self.tensor[:,2:]
+        return (corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top)
 
     def flip(self, bev_direction="horizontal",):
         assert bev_direction in ("horizontal", "vertical")
@@ -46,9 +49,16 @@ class BEVBox2D:
         rot_mat_T = self.tensor.new_tensor(
             [[rot_cos, -rot_sin], [rot_sin, rot_cos]]
         )
-        #FIXME: this is a simple approximation, need to be improved
-        self.tensor[:,:2] = self.tensor[:,:2] @ rot_mat_T
-        self.tensor[:,2:] = self.tensor[:,2:] @ rot_mat_T
+        corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top = self.corners()
+        corner_left_bottem = corner_left_bottem @ rot_mat_T
+        corner_left_top = corner_left_top @ rot_mat_T
+        corner_right_bottem = corner_right_bottem @ rot_mat_T
+        corner_right_top = corner_right_top @ rot_mat_T
+
+        self.tensor[:,0] = torch.minimum(corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0])
+        self.tensor[:,1] = torch.minimum(corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1])
+        self.tensor[:,2] = torch.maximum(corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0])
+        self.tensor[:,3] = torch.maximum(corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1])
         # return rot_mat_T
 
     def scale(self,scale_factor):

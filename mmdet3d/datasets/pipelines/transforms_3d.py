@@ -278,7 +278,7 @@ class RandomFlip3D:
             if "gt_masks_bev" in data:
                 data["gt_masks_bev"] = data["gt_masks_bev"][:, ::-1, :].copy()
             if "pooled_bbox" in data:
-                data["pooled_bbox"].flip("horizontal")
+                data["pooled_bbox"].flip("vertical")
 
         data["lidar_aug_matrix"][:3, :] = rotation @ data["lidar_aug_matrix"][:3, :]
         return data
