@@ -26,6 +26,15 @@ class BEVBox2D:
         corner_right_bottem = torch.stack([self.tensor[:,2], self.tensor[:,1]], dim=1) 
         corner_right_top = self.tensor[:,2:]
         return corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top
+    
+    def shuffle(self):
+        """Shuffle the bboxes.
+        Returns:
+            torch.Tensor: The shuffled index.
+        """
+        idx = torch.randperm(self.__len__(), device=self.tensor.device)
+        self.tensor = self.tensor[idx]
+        return idx
 
     def flip(self, bev_direction="horizontal",):
         assert bev_direction in ("horizontal", "vertical")
