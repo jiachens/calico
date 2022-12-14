@@ -141,9 +141,14 @@ class GlobalRotScaleTrans:
                 data["points"].rotate(-theta)
                 data["points"].translate(translation)
                 data["points"].scale(scale)
-            if "semantic_objects" in data:
-                #TODO
-                pass
+
+            if "pooled_bbox" in data:
+                pooled_bbox = data["pooled_bbox"]
+                #TODO: check if this is correct
+                pooled_bbox.rotate(theta)
+                pooled_bbox.translate(translation)
+                pooled_bbox.scale(scale)
+                data["pooled_bbox"] = pooled_bbox
 
             gt_boxes = data["gt_bboxes_3d"]
             rotation = rotation @ gt_boxes.rotate(theta).numpy()
@@ -261,6 +266,8 @@ class RandomFlip3D:
                 data["gt_bboxes_3d"].flip("horizontal")
             if "gt_masks_bev" in data:
                 data["gt_masks_bev"] = data["gt_masks_bev"][:, :, ::-1].copy()
+            if "pooled_bbox" in data:
+                data["pooled_bbox"].flip("horizontal")
 
         if flip_vertical:
             rotation = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]]) @ rotation
@@ -270,6 +277,8 @@ class RandomFlip3D:
                 data["gt_bboxes_3d"].flip("vertical")
             if "gt_masks_bev" in data:
                 data["gt_masks_bev"] = data["gt_masks_bev"][:, ::-1, :].copy()
+            if "pooled_bbox" in data:
+                data["pooled_bbox"].flip("horizontal")
 
         data["lidar_aug_matrix"][:3, :] = rotation @ data["lidar_aug_matrix"][:3, :]
         return data
@@ -412,6 +421,7 @@ class ObjectNoise:
         # TODO: check this inplace function
         numpy_box = gt_bboxes_3d.tensor.numpy()
         numpy_points = points.tensor.numpy()
+        # TODO: merge this function to the calico framework
 
         noise_per_object_v3_(
             numpy_box,
@@ -496,7 +506,8 @@ class ObjectRangeFilter:
 
         if "pooled_bbox" in data.keys():
             pooled_bbox = data["pooled_bbox"]
-            #TODO
+            mask = pooled_bbox.in_range_bev(bev_range)
+            pooled_bbox = pooled_bbox[mask]
             data["pooled_bbox"] = pooled_bbox
 
         return data
@@ -507,13 +518,32 @@ class ObjectRangeFilter:
         repr_str += f"(point_cloud_range={self.pcd_range.tolist()})"
         return repr_str
 
-#TODO
 @PIPELINES.register_module()
 class BBoxTransformer:
-    def __init__(self, voxel_size):
+    def __init__(self, voxel_size=0.75, num_bbox=10, pc_range=[-54., -54., 54., 54.]):
         self.voxel_size = voxel_size
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        self.num_bbox = num_bbox
+        self.pc_range = pc_range
+
+    def __call__(self,data):
+        pooled_bbox = data['pooled_bbox']
+        if self.num_bbox > pooled_bbox.shape[0]:
+            pass
+        else:
+            np.random.shuffle(pooled_bbox)
+            pooled_bbox = pooled_bbox[:self.num_bbox]
         pass
+
+        pooled_bbox = pooled_bbox.tensor
+
+#TODO
+
+# if self.num_bbox > bbox.shape[0]:
+#     pass
+# else:
+#     np.random.shuffle(bbox)
+#     bbox = bbox[:self.num_bbox]
+# results['pooledbbox'] = bbox
 
 
 @PIPELINES.register_module()

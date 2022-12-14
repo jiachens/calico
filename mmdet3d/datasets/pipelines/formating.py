@@ -6,6 +6,7 @@ from mmdet3d.core.bbox import BaseInstance3DBoxes
 from mmdet3d.core.points import BasePoints
 from mmdet.datasets.builder import PIPELINES
 from mmdet.datasets.pipelines import to_tensor
+from mmdet3d.core.bbox import BEVBox2D
 
 import torch
 
@@ -51,6 +52,10 @@ class DefaultFormatBundle3D:
         if "points" in results:
             assert isinstance(results["points"], BasePoints)
             results["points"] = DC(results["points"].tensor)
+        
+        if "pooled_bbox" in results:
+            assert isinstance(results["pooled_bbox"], BEVBox2D)
+            results["pooled_bbox"] = DC(results["pooled_bbox"].tensor)
 
         for key in ["voxels", "coors", "voxel_centers", "num_points"]:
             if key not in results:

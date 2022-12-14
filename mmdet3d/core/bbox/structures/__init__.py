@@ -4,6 +4,9 @@ from .cam_box3d import CameraInstance3DBoxes
 from .coord_3d_mode import Coord3DMode
 from .depth_box3d import DepthInstance3DBoxes
 from .lidar_box3d import LiDARInstance3DBoxes
+from .bev_box2d import BEVBox2D
+
+#TODO
 from .utils import (
     get_box_type,
     get_proj_mat_by_coord_type,
@@ -28,4 +31,5 @@ __all__ = [
     "Coord3DMode",
     "mono_cam_box2vis",
     "get_proj_mat_by_coord_type",
+    "BEVBox2D"
 ]

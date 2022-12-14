@@ -315,9 +315,9 @@ class LoadPooledBBox:
     or 
     Generate pooled bbox randomly
     '''
-    def __init__(self, num_bbox=10, method='semantic'):
-        self.num_bbox = num_bbox
+    def __init__(self, voxel_size, method='semantic'):
         self.method = method
+        self.voxel_size = voxel_size
 
     def _load_bbox(self, bbox_path):
         """Private function to load semantic pooled bbox.
@@ -337,7 +337,18 @@ class LoadPooledBBox:
         """
         Private function to generate random pooled bbox.
         """
-        pass
+        NUM_BBOX = 50
+        RANGE_LIDAR = 54.0
+        #FIXME: this is a hack to make sure the bbox is not too close to the edge
+        left_bottom_corner = np.random.uniform(-RANGE_LIDAR, RANGE_LIDAR-5, (NUM_BBOX,2))
+        h = np.random.uniform(0.5, 5, NUM_BBOX) # empirically chosen height
+        w = np.random.uniform(0.5, 5, NUM_BBOX)
+        x1 = left_bottom_corner[:,0]
+        y1 = left_bottom_corner[:,1]
+        x2 = x1 + w
+        y2 = y1 + h
+        bbox = np.concatenate([x1, y1, x2, y2], axis=1)
+        return bbox
 
     def __call__(self, results):
         if self.method == "semantic":
@@ -346,13 +357,10 @@ class LoadPooledBBox:
             ##TODO: make it more general
             bbox_path = bbox_path.replace("pcd.bin", "npy")
             bbox = self._load_bbox(bbox_path)
-            if self.num_bbox > bbox.shape[0]:
-                pass
-            else:
-                np.random.shuffle(bbox)
-                bbox = bbox[:self.num_bbox]
-            results['pooledbbox'] = bbox
+            results['pooled_bbox'] = bbox
         elif self.method == 'random':
+            return self._generate_bbox()
+        elif self.method == 'regular':
             raise NotImplementedError
         
         return results
