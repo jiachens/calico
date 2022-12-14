@@ -521,6 +521,7 @@ class BBoxTransformer:
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
+        print(pooled_bbox.tensor.shape)
         if self.num_bbox > pooled_bbox.tensor.shape[0]:
             #TODO: support this case
             raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
