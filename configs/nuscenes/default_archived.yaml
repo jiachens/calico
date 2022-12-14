@@ -64,9 +64,6 @@ train_pipeline:
     reduce_beams: ${reduce_beams}
     load_augmented: ${load_augmented}
   -
-    type: LoadPooledBBox
-    method: semantic
-  -
     type: LoadPointsFromMultiSweeps
     sweeps_num: 9
     load_dim: ${load_dim}
@@ -150,11 +147,6 @@ train_pipeline:
     type: ObjectNameFilter
     classes: ${object_classes}
   -
-    type: BBoxTransformer
-    voxel_size: [0.75,0.75]
-    num_bbox: 10
-    bev_range: [-54., -54., 54., 54.]
-  -
     type: ImageNormalize
     mean: [0.485, 0.456, 0.406]
     std: [0.229, 0.224, 0.225]
@@ -182,7 +174,6 @@ train_pipeline:
       - gt_bboxes_3d
       - gt_labels_3d
       - gt_masks_bev
-      - pooled_bbox
     meta_keys:
       - camera_intrinsics
       - camera2ego

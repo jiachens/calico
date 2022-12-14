@@ -315,10 +315,8 @@ class LoadPooledBBox:
     or 
     Generate pooled bbox randomly
     '''
-    def __init__(self, voxel_size, method='semantic'):
+    def __init__(self, method='semantic'):
         self.method = method
-        self.voxel_size = voxel_size
-
     def _load_bbox(self, bbox_path):
         """Private function to load semantic pooled bbox.
         Args:
