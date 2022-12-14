@@ -518,13 +518,30 @@ class BBoxTransformer:
         self.num_bbox = num_bbox
         self.bev_range = bev_range
 
+    def _generate_bbox(self, num_bbox, bev_range):
+        """
+        Private function to generate random pooled bbox.
+        """
+
+        #FIXME: this is a hack to make sure the bbox is not too close to the edge
+        left_bottom_corner = np.stack([np.random.uniform(-bev_range[0], bev_range[2]-5, (num_bbox,)), np.random.uniform(-bev_range[1], bev_range[3]-5, (num_bbox,))], axis=1)
+        h = np.random.uniform(0.5, 5, num_bbox) # empirically chosen height
+        w = np.random.uniform(0.5, 5, num_bbox)
+        x1 = left_bottom_corner[:,0]
+        y1 = left_bottom_corner[:,1]
+        x2 = x1 + w
+        y2 = y1 + h
+        bbox = np.concatenate([x1, y1, x2, y2], axis=1)
+        device = torch.device("cpu")
+        return torch.as_tensor(bbox,dtype=torch.float32, device=device)
+
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
-        print(pooled_bbox.tensor.shape)
         if self.num_bbox > pooled_bbox.tensor.shape[0]:
-            #TODO: support this case
-            raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
+            random_bbox = self._generate_bbox(self.num_bbox-pooled_bbox.tensor.shape[0], self.bev_range)
+            pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
+            # raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
         else:
             pooled_bbox.shuffle()
             pooled_bbox = pooled_bbox[0:self.num_bbox]
