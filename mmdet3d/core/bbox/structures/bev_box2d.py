@@ -22,10 +22,10 @@ class BEVBox2D:
     @property
     def corners(self):
         corner_left_bottem = self.tensor[:,:2]
-        corner_left_top = torch.stack((self.tensor[:,0], self.tensor[:,3]), dim=1)
-        corner_right_bottem = torch.stack((self.tensor[:,2], self.tensor[:,1]), dim=1) 
+        corner_left_top = torch.stack([self.tensor[:,0], self.tensor[:,3]], dim=1)
+        corner_right_bottem = torch.stack([self.tensor[:,2], self.tensor[:,1]], dim=1) 
         corner_right_top = self.tensor[:,2:]
-        return (corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top)
+        return corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top
 
     def flip(self, bev_direction="horizontal",):
         assert bev_direction in ("horizontal", "vertical")
