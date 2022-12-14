@@ -49,7 +49,7 @@ class BEVBox2D:
         rot_mat_T = self.tensor.new_tensor(
             [[rot_cos, -rot_sin], [rot_sin, rot_cos]]
         )
-        corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top = self.corners()
+        corner_left_bottem, corner_left_top, corner_right_bottem, corner_right_top = self.corners
         corner_left_bottem = corner_left_bottem @ rot_mat_T
         corner_left_top = corner_left_top @ rot_mat_T
         corner_right_bottem = corner_right_bottem @ rot_mat_T
