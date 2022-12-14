@@ -182,7 +182,6 @@ train_pipeline:
       - gt_bboxes_3d
       - gt_labels_3d
       - gt_masks_bev
-      - pooled_bbox
     meta_keys:
       - camera_intrinsics
       - camera2ego
