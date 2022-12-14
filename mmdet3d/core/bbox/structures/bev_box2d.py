@@ -3,7 +3,7 @@ import torch
 
 
 class BEVBox2D:
-    def __init__(self):
+    def __init__(self,tensor):
         if isinstance(tensor, torch.Tensor):
             device = tensor.device
         else:
