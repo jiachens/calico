@@ -9,6 +9,7 @@ from PIL import Image
 
 
 from mmdet3d.core.points import BasePoints, get_points_type
+from mmdet3d.core.bbox import BEVBox2D
 from mmdet.datasets.builder import PIPELINES
 from mmdet.datasets.pipelines import LoadAnnotations
 
@@ -355,9 +356,10 @@ class LoadPooledBBox:
             ##TODO: make it more general
             bbox_path = bbox_path.replace("pcd.bin", "npy")
             bbox = self._load_bbox(bbox_path)
+            bbox = BEVBox2D(bbox)
             results['pooled_bbox'] = bbox
         elif self.method == 'random':
-            return self._generate_bbox()
+            bbox = BEVBox2D(self._generate_bbox())
         elif self.method == 'regular':
             raise NotImplementedError
         
