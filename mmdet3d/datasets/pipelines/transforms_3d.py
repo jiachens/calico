@@ -462,7 +462,6 @@ class PointShuffle:
         data["points"].shuffle()
         return data
 
-#TODO
 @PIPELINES.register_module()
 class ObjectRangeFilter:
     """Filter objects by the range.
@@ -504,12 +503,6 @@ class ObjectRangeFilter:
         data["gt_bboxes_3d"] = gt_bboxes_3d
         data["gt_labels_3d"] = gt_labels_3d
 
-        if "pooled_bbox" in data.keys():
-            pooled_bbox = data["pooled_bbox"]
-            mask = pooled_bbox.in_range_bev(bev_range)
-            pooled_bbox = pooled_bbox[mask]
-            data["pooled_bbox"] = pooled_bbox
-
         return data
 
     def __repr__(self):
@@ -520,23 +513,28 @@ class ObjectRangeFilter:
 
 @PIPELINES.register_module()
 class BBoxTransformer:
-    def __init__(self, voxel_size=0.75, num_bbox=10, pc_range=[-54., -54., 54., 54.]):
+    def __init__(self, voxel_size=[0.75,0.75], num_bbox=10, bev_range=[-54., -54., 54., 54.]):
         self.voxel_size = voxel_size
         self.num_bbox = num_bbox
-        self.pc_range = pc_range
+        self.bev_range = bev_range
 
     def __call__(self,data):
+        assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
         if self.num_bbox > pooled_bbox.shape[0]:
-            pass
+            #TODO: support this case
+            raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
         else:
             np.random.shuffle(pooled_bbox)
             pooled_bbox = pooled_bbox[:self.num_bbox]
-        pass
+            
+        mask = pooled_bbox.in_range_bev(self.bev_range)
+        pooled_bbox = pooled_bbox[mask]
 
-        pooled_bbox = pooled_bbox.tensor
+        pooled_bbox.tensor[:,0::2] = (pooled_bbox.tensor[:,0::2] - self.bev_range[0]) / self.voxel_size[0]
+        pooled_bbox.tensor[:,1::2] = (pooled_bbox.tensor[:,1::2] - self.bev_range[1]) / self.voxel_size[1]
 
-
+        data['pooled_bbox'] = pooled_bbox
 
 
 @PIPELINES.register_module()
