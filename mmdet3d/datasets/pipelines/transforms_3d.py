@@ -521,11 +521,11 @@ class BBoxTransformer:
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
-        if self.num_bbox > pooled_bbox.shape[0]:
+        if self.num_bbox > pooled_bbox.tensor.shape[0]:
             #TODO: support this case
             raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
         else:
-            np.random.shuffle(pooled_bbox)
+            #FIXME: this is a bug, should be fixed
             pooled_bbox = pooled_bbox[:self.num_bbox]
             
         mask = pooled_bbox.in_range_bev(self.bev_range)
