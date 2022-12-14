@@ -522,13 +522,11 @@ class BBoxTransformer:
         """
         Private function to generate random pooled bbox.
         """
-
         #FIXME: this is a hack to make sure the bbox is not too close to the edge
-        left_bottom_corner = np.stack([np.random.uniform(-bev_range[0], bev_range[2]-5, (num_bbox,)), np.random.uniform(-bev_range[1], bev_range[3]-5, (num_bbox,))], axis=1)
         h = np.random.uniform(0.5, 5, num_bbox) # empirically chosen height
         w = np.random.uniform(0.5, 5, num_bbox)
-        x1 = left_bottom_corner[:,0]
-        y1 = left_bottom_corner[:,1]
+        x1 = np.random.uniform(-bev_range[0], bev_range[2]-5, num_bbox)
+        y1 = np.random.uniform(-bev_range[1], bev_range[3]-5, num_bbox)
         x2 = x1 + w
         y2 = y1 + h
         bbox = np.concatenate([x1, y1, x2, y2], axis=1)
