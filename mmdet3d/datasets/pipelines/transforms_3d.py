@@ -536,14 +536,7 @@ class BBoxTransformer:
 
         pooled_bbox = pooled_bbox.tensor
 
-#TODO
 
-# if self.num_bbox > bbox.shape[0]:
-#     pass
-# else:
-#     np.random.shuffle(bbox)
-#     bbox = bbox[:self.num_bbox]
-# results['pooledbbox'] = bbox
 
 
 @PIPELINES.register_module()

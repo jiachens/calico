@@ -87,7 +87,13 @@ class BEVBox2D:
             )
 
     def in_range_bev(self, box_range):
-        pass
+        in_range_flags = (
+            (self.tensor[:, 0] > box_range[0])
+            & (self.tensor[:, 1] > box_range[1])
+            & (self.tensor[:, 2] < box_range[2])
+            & (self.tensor[:, 3] < box_range[3])
+        )
+        return in_range_flags
 
     def __getitem__(self, item):
         """
