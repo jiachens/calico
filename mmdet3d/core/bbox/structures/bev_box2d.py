@@ -141,6 +141,8 @@ class BEVBox2D:
                 item[1] = [item[1]]
                 item = tuple(item)
             p = self.tensor[item[0], item[1]]
+        elif isinstance(item, (slice, np.ndarray, torch.Tensor)):
+            p = self.tensor[item]
         else:
             raise NotImplementedError(f"Invalid slice {item}!")
 
