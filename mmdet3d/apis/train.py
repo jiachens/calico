@@ -40,6 +40,7 @@ def train_model(
         )
         for ds in dataset
     ]
+    print("finish build_dataloader")
 
     # put model on gpus
     find_unused_parameters = cfg.get("find_unused_parameters", False)
@@ -65,7 +66,7 @@ def train_model(
             meta={},
         ),
     )
-    
+    print("finish build_runner")
     if hasattr(runner, "set_dataset"):
         runner.set_dataset(dataset)
 
@@ -123,4 +124,5 @@ def train_model(
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
+    print("start training!")
     runner.run(data_loaders, [("train", 1)])
