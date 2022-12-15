@@ -233,6 +233,7 @@ class BEVFusion(Base3DFusionModel):
         gt_labels_3d=None,
         **kwargs,
     ):
+        print(pooled_bbox,pooled_bbox.shape)
         features = []
         for sensor in (
             self.encoders if self.training else list(self.encoders.keys())[::-1]
@@ -261,7 +262,6 @@ class BEVFusion(Base3DFusionModel):
         if not self.training:
             # avoid OOM
             features = features[::-1]
-        print(pooled_bbox,pooled_bbox.shape)
         ##TODO: add pretraining logic here
         # if self.ssl:
         #     ##TODO:ROI align here
