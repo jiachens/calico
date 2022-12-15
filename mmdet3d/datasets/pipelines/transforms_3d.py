@@ -549,8 +549,8 @@ class BBoxTransformer:
 
         pooled_bbox.tensor[:,0::2] = (pooled_bbox.tensor[:,0::2] - self.bev_range[0]) / self.voxel_size[0]
         pooled_bbox.tensor[:,1::2] = (pooled_bbox.tensor[:,1::2] - self.bev_range[1]) / self.voxel_size[1]
-
         data['pooled_bbox'] = pooled_bbox
+        return data
 
 
 @PIPELINES.register_module()
