@@ -51,12 +51,10 @@ class DefaultFormatBundle3D:
         # Format 3D data
         if "points" in results:
             assert isinstance(results["points"], BasePoints)
-            print(results["points"].tensor.shape)
             results["points"] = DC(results["points"].tensor)
         
         if "pooled_bbox" in results:
             assert isinstance(results["pooled_bbox"], BEVBox2D)
-            print(results["pooled_bbox"].tensor.shape)
             results["pooled_bbox"] = DC(results["pooled_bbox"].tensor)
 
         for key in ["voxels", "coors", "voxel_centers", "num_points"]:

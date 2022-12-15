@@ -206,6 +206,7 @@ class BEVFusion(Base3DFusionModel):
                 img_aug_matrix,
                 lidar_aug_matrix,
                 metas,
+                pooled_bbox,
                 gt_masks_bev,
                 gt_bboxes_3d,
                 gt_labels_3d,
@@ -233,7 +234,6 @@ class BEVFusion(Base3DFusionModel):
         gt_labels_3d=None,
         **kwargs,
     ):
-        print(pooled_bbox,pooled_bbox.shape)
         features = []
         for sensor in (
             self.encoders if self.training else list(self.encoders.keys())[::-1]

@@ -536,6 +536,10 @@ class BBoxTransformer:
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
+            
+        mask = pooled_bbox.in_range_bev(self.bev_range)
+        pooled_bbox = pooled_bbox[mask]
+
         if self.num_bbox > pooled_bbox.tensor.shape[0]:
             random_bbox = self._generate_bbox(self.num_bbox-pooled_bbox.tensor.shape[0], self.bev_range)
             pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
@@ -543,12 +547,10 @@ class BBoxTransformer:
         else:
             pooled_bbox.shuffle()
             pooled_bbox = pooled_bbox[0:self.num_bbox]
-            
-        mask = pooled_bbox.in_range_bev(self.bev_range)
-        pooled_bbox = pooled_bbox[mask]
 
         pooled_bbox.tensor[:,0::2] = (pooled_bbox.tensor[:,0::2] - self.bev_range[0]) / self.voxel_size[0]
         pooled_bbox.tensor[:,1::2] = (pooled_bbox.tensor[:,1::2] - self.bev_range[1]) / self.voxel_size[1]
+        
         data['pooled_bbox'] = pooled_bbox
         return data
 
