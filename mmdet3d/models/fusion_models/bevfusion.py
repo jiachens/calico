@@ -65,33 +65,36 @@ class BEVFusion(Base3DFusionModel):
 
         if calico is not None:
             ##TODO: add calico
+            self.pretraining = True
             self.lidar_projector = build_projector(calico["lidar_projector"])
             self.camera_projector = build_projector(calico["camera_projector"])
             from torchvision.ops import RoIAlign
             self.roi_align = RoIAlign(**calico["roi_align"])
             self.pretrain_loss = build_loss(calico["loss"])
-        # else:
-        self.decoder = nn.ModuleDict(
-            {
-                "backbone": build_backbone(decoder["backbone"]),
-                "neck": build_neck(decoder["neck"]),
-            }
-        )
-        self.heads = nn.ModuleDict()
-        for name in heads:
-            if heads[name] is not None:
-                self.heads[name] = build_head(heads[name])
+        else:
+            self.pretraining = False
+            self.decoder = nn.ModuleDict(
+                {
+                    "backbone": build_backbone(decoder["backbone"]),
+                    "neck": build_neck(decoder["neck"]),
+                }
+            )
+            self.heads = nn.ModuleDict()
+            for name in heads:
+                if heads[name] is not None:
+                    self.heads[name] = build_head(heads[name])
 
         if "loss_scale" in kwargs:
             self.loss_scale = kwargs["loss_scale"]
         else:
-            self.loss_scale = dict()
-            for name in heads:
-                if heads[name] is not None:
-                    self.loss_scale[name] = 1.0
-
-        ## TEST ##
-        # self.counter = 0
+            if self.pretraining:
+                self.loss_scale = dict()
+                self.loss_scale["calico"] = 1.0
+            else:
+                self.loss_scale = dict()
+                for name in heads:
+                    if heads[name] is not None:
+                        self.loss_scale[name] = 1.0
 
 
         self.init_weights()
@@ -274,25 +277,33 @@ class BEVFusion(Base3DFusionModel):
                 raise ValueError(f"unsupported sensor: {sensor}")
             features.append(feature)
 
-        if not self.training:
+        if not self.training and not self.pretraining:
             # avoid OOM
             features = features[::-1]
 
-        if self.fuser is not None:
-            x = self.fuser(features)
-        else:
-            assert len(features) == 1, features
-            x = features[0]
+        if not self.pretraining:
+            if self.fuser is not None:
+                x = self.fuser(features)
+            else:
+                assert len(features) == 1, features
+                x = features[0]
 
-        batch_size = x.shape[0]
+            batch_size = x.shape[0]
 
-        x = self.decoder["backbone"](x)
-        x = self.decoder["neck"](x)
+            x = self.decoder["backbone"](x)
+            x = self.decoder["neck"](x)
 
         if self.training:
             outputs = {}
-            if self.calico is not None:
-                pass # TODO
+            if self.pretraining:
+                #TODO: add pretraining 
+                #FIXME: add pretraining
+                roi_lidar_feature = self.roi_align(features[1], pooled_bbox)
+                roi_camera_feature = self.roi_align(features[0], pooled_bbox)
+                projected_lidar_feaure = self.lidar_projector(roi_lidar_feature)
+                projected_camera_feature = self.camera_projector(roi_camera_feature)
+                loss = self.pretrain_loss(projected_camera_feature,projected_lidar_feaure, loss_scale = 1.0)
+                outputs['loss/pretrain/calico'] = loss
             else:
                 for type, head in self.heads.items():
                     if type == "object":
@@ -307,7 +318,7 @@ class BEVFusion(Base3DFusionModel):
                             outputs[f"loss/{type}/{name}"] = val * self.loss_scale[type]
                         else:
                             outputs[f"stats/{type}/{name}"] = val
-                return outputs
+            return outputs
         else:
             outputs = [{} for _ in range(batch_size)]
             for type, head in self.heads.items():

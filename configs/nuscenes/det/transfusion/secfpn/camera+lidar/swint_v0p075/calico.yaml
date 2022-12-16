@@ -6,11 +6,15 @@ model:
 
   calico:
     lidar_projector:
-      type: MLPProjector
+      type: CNNProjector
       channels: [80, 256, 128]
+      kernel_size: 3
+      stride: 1
     camera_projector:
-      type: MLPProjector    
+      type: CNNProjector    
       channels: [256, 256, 128]
+      kernel_size: 3
+      stride: 1
 
     loss:
       type: ClipLoss
