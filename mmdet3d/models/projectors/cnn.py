@@ -24,7 +24,7 @@ class CNNProjector(nn.Module):
                     nn.ReLU()
                 )
             )
-    @force_fp32(apply_to=("x"))
+    @force_fp32()
     def forward(self, x):
         for layer in self.layers:
             x = layer(x)
