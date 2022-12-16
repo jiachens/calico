@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.runner import auto_fp16
+from mmcv.runner import auto_fp16, force_fp32
 
 from mmdet3d.models.builder import PROJECTORS
 
@@ -24,7 +24,7 @@ class CNNProjector(nn.Module):
                     nn.ReLU()
                 )
             )
-    @auto_fp16(apply_to=("x"))
+    @force_fp32(apply_to=("x"))
     def forward(self, x):
         for layer in self.layers:
             x = layer(x)
