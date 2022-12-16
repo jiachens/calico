@@ -536,7 +536,6 @@ class BBoxTransformer:
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
-            
         mask = pooled_bbox.in_range_bev(self.bev_range)
         pooled_bbox = pooled_bbox[mask]
 

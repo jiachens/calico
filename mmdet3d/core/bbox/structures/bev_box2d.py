@@ -39,11 +39,9 @@ class BEVBox2D:
     def flip(self, bev_direction="horizontal",):
         assert bev_direction in ("horizontal", "vertical")
         if bev_direction == "horizontal":
-            self.tensor[:, 1] = -self.tensor[:, 3]
-            self.tensor[:, 3] = -self.tensor[:, 1]
+            self.tensor[:, 1], self.tensor[:, 3] = -self.tensor[:, 3], -self.tensor[:, 1]
         elif bev_direction == "vertical":
-            self.tensor[:, 0] = -self.tensor[:, 2]
-            self.tensor[:, 2] = -self.tensor[:, 0]
+            self.tensor[:, 0], self.tensor[:, 2] = -self.tensor[:, 2], -self.tensor[:, 0]
 
     def rotate(self, angle):
         #TODO: add support for angle with [2,2] matrix
@@ -66,8 +64,8 @@ class BEVBox2D:
 
         self.tensor[:,0],_ = torch.min(torch.stack([corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0]]),dim=0)
         self.tensor[:,1],_ = torch.min(torch.stack([corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1]]),dim=0)
-        self.tensor[:,2],_ = torch.min(torch.stack([corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0]]),dim=0)
-        self.tensor[:,3],_ = torch.min(torch.stack([corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1]]),dim=0)
+        self.tensor[:,2],_ = torch.max(torch.stack([corner_left_bottem[:,0], corner_right_bottem[:,0], corner_left_top[:,0], corner_right_top[:,0]]),dim=0)
+        self.tensor[:,3],_ = torch.max(torch.stack([corner_left_bottem[:,1], corner_right_bottem[:,1], corner_left_top[:,1], corner_right_top[:,1]]),dim=0)
         # return rot_mat_T
 
     def scale(self,scale_factor):

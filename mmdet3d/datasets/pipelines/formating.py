@@ -197,6 +197,6 @@ class Collect3D:
         for key in self.meta_lis_keys:
             if key in results:
                 metas[key] = results[key]
-
+    
         data["metas"] = DC(metas, cpu_only=True)
         return data

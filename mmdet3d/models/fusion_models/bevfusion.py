@@ -87,6 +87,10 @@ class BEVFusion(Base3DFusionModel):
                 from torchvision.ops import RoIAlign
                 self.roi_align = RoIAlign(spatial_scale=0.125,output_size=(7,7)) 
 
+        ## TEST ##
+        # self.counter = 0
+
+
         self.init_weights()
 
     def init_weights(self) -> None:
@@ -233,7 +237,15 @@ class BEVFusion(Base3DFusionModel):
         gt_bboxes_3d=None,
         gt_labels_3d=None,
         **kwargs,
-    ):
+    ):  
+        ## TEST CORRECTNESS ###
+        # import time
+        # from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
+        # pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.75 - 54.0
+        # pooled_bbox[0][:,1::2] = pooled_bbox[0][:,1::2] * 0.75 - 54.0
+        # draw_pointcloud_polygon_matplotlib(points[0].cpu().numpy(), bboxes = pooled_bbox[0].cpu().numpy(),save='./data/temp_test/'+str(self.counter)+'.png')
+        # self.counter += 1
+        #######################
         features = []
         for sensor in (
             self.encoders if self.training else list(self.encoders.keys())[::-1]

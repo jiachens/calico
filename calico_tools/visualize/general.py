@@ -95,6 +95,21 @@ def draw_mutlti_cluster_polygon_matplotlib(pointclouds, show=False, bboxes=None,
         plt.savefig(save)
     plt.close()
 
+def draw_pointcloud_polygon_matplotlib(pointcloud, show=False, bboxes=None, save=None):
+    fig, ax = plt.subplots(figsize=(40,40))
+    xlim, ylim = get_xylims(pointcloud)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.scatter(pointcloud[:,0], pointcloud[:,1], s=15)
+    if bboxes is not None:
+        draw_simplified_bbox_2d(ax, bboxes)
+    if show:
+        plt.show()
+    if save is not None:
+        plt.savefig(save)
+    plt.close()
+
+
 
 
 if __name__ == '__main__':
