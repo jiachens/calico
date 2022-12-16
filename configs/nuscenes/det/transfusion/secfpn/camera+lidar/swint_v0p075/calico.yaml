@@ -1,0 +1,21 @@
+model:
+  fuser:
+    type: ConvFuser
+    in_channels: [80, 256]
+    out_channels: 256
+
+  calico:
+    lidar_projector:
+      type: MLPProjector
+      channels: [80, 256, 128]
+    camera_projector:
+      type: MLPProjector    
+      channels: [256, 256, 128]
+
+    loss:
+      type: ClipLoss
+      
+    roi_align:
+      spatial_scale: 0.125
+      output_size: 7
+      sampling_ratio: -1

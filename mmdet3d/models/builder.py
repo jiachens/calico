@@ -5,6 +5,7 @@ from mmdet.models.builder import BACKBONES, HEADS, LOSSES, NECKS
 FUSIONMODELS = Registry("fusion_models")
 VTRANSFORMS = Registry("vtransforms")
 FUSERS = Registry("fusers")
+PROJECTORS = Registry("projectors")
 
 
 def build_backbone(cfg):
@@ -29,6 +30,9 @@ def build_head(cfg):
 
 def build_loss(cfg):
     return LOSSES.build(cfg)
+
+def build_projector(cfg):
+    return PROJECTORS.build(cfg)
 
 
 def build_fusion_model(cfg, train_cfg=None, test_cfg=None):

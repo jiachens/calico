@@ -35,6 +35,7 @@ model:
         max_voxels: [120000, 160000]
       backbone:
         sparse_shape: [1440, 1440, 41]
+    calico:
 
   heads:
     object:
@@ -42,4 +43,3 @@ model:
         grid_size: [1440, 1440, 41]
       test_cfg:
         grid_size: [1440, 1440, 41]
-

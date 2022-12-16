@@ -11,6 +11,8 @@ from mmdet3d.models.builder import (
     build_head,
     build_neck,
     build_vtransform,
+    build_loss,
+    build_projector
 )
 from mmdet3d.ops import Voxelization, DynamicScatter
 from mmdet3d.models import FUSIONMODELS
@@ -29,6 +31,7 @@ class BEVFusion(Base3DFusionModel):
         fuser: Dict[str, Any],
         decoder: Dict[str, Any],
         heads: Dict[str, Any],
+        calico: Dict[str, Any],
         **kwargs,
     ) -> None:
         super().__init__()
@@ -60,6 +63,14 @@ class BEVFusion(Base3DFusionModel):
         else:
             self.fuser = None
 
+        if calico is not None:
+            ##TODO: add calico
+            self.lidar_projector = build_projector(calico["lidar_projector"])
+            self.camera_projector = build_projector(calico["camera_projector"])
+            from torchvision.ops import RoIAlign
+            self.roi_align = RoIAlign(**calico["roi_align"])
+            self.loss = build_loss(calico["loss"])
+        # else:
         self.decoder = nn.ModuleDict(
             {
                 "backbone": build_backbone(decoder["backbone"]),
@@ -78,14 +89,6 @@ class BEVFusion(Base3DFusionModel):
             for name in heads:
                 if heads[name] is not None:
                     self.loss_scale[name] = 1.0
-        # TODO: complete the below code            
-        if "ssl" in kwargs:
-            self.ssl = kwargs["ssl"]
-            if self.ssl:
-                self.lidar_projector = build_projector()
-                self.camera_projector = build_projector()
-                from torchvision.ops import RoIAlign
-                self.roi_align = RoIAlign(spatial_scale=0.125,output_size=(7,7)) 
 
         ## TEST ##
         # self.counter = 0
@@ -238,7 +241,7 @@ class BEVFusion(Base3DFusionModel):
         gt_labels_3d=None,
         **kwargs,
     ):  
-        ## TEST CORRECTNESS ###
+        ## TEST CORRECTNESS ### TODO: remove me later
         # import time
         # from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
         # pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.75 - 54.0
@@ -274,14 +277,7 @@ class BEVFusion(Base3DFusionModel):
         if not self.training:
             # avoid OOM
             features = features[::-1]
-        ##TODO: add pretraining logic here
-        # if self.ssl:
-        #     ##TODO:ROI align here
-        #     # self.projector_camera 
-        #     # self.projector_lidar
-        #     ## maybe use some cross attention here
-        #     pass
-        ###############################
+
         if self.fuser is not None:
             x = self.fuser(features)
         else:
@@ -295,20 +291,23 @@ class BEVFusion(Base3DFusionModel):
 
         if self.training:
             outputs = {}
-            for type, head in self.heads.items():
-                if type == "object":
-                    pred_dict = head(x, metas)
-                    losses = head.loss(gt_bboxes_3d, gt_labels_3d, pred_dict)
-                elif type == "map":
-                    losses = head(x, gt_masks_bev)
-                else:
-                    raise ValueError(f"unsupported head: {type}")
-                for name, val in losses.items():
-                    if val.requires_grad:
-                        outputs[f"loss/{type}/{name}"] = val * self.loss_scale[type]
+            if self.calico is not None:
+                pass # TODO
+            else:
+                for type, head in self.heads.items():
+                    if type == "object":
+                        pred_dict = head(x, metas)
+                        losses = head.loss(gt_bboxes_3d, gt_labels_3d, pred_dict)
+                    elif type == "map":
+                        losses = head(x, gt_masks_bev)
                     else:
-                        outputs[f"stats/{type}/{name}"] = val
-            return outputs
+                        raise ValueError(f"unsupported head: {type}")
+                    for name, val in losses.items():
+                        if val.requires_grad:
+                            outputs[f"loss/{type}/{name}"] = val * self.loss_scale[type]
+                        else:
+                            outputs[f"stats/{type}/{name}"] = val
+                return outputs
         else:
             outputs = [{} for _ in range(batch_size)]
             for type, head in self.heads.items():

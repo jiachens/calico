@@ -16,6 +16,9 @@ try:
 except ImportError:
     hvd = None
 
+'''
+steal from existing open clip implementation
+'''
 
 def gather_features(
         image_features,
