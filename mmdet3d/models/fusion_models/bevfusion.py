@@ -102,6 +102,7 @@ class BEVFusion(Base3DFusionModel):
     def init_weights(self) -> None:
         if "camera" in self.encoders:
             self.encoders["camera"]["backbone"].init_weights()
+        
 
     def extract_camera_features(
         self,

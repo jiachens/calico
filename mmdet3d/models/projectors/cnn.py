@@ -5,6 +5,7 @@ from mmcv.runner import auto_fp16, force_fp32
 
 from mmdet3d.models.builder import PROJECTORS
 
+__all__ = ['CNNProjector']
 
 @PROJECTORS.register_module()
 class CNNProjector(nn.Module):
@@ -13,7 +14,7 @@ class CNNProjector(nn.Module):
                  kernel_size,
                  stride,
                  ):
-        super(CNNProjector, self).__init__()
+        super().__init__()
         self.layers = []
 
         for i in range(len(channels) - 1):
@@ -24,6 +25,10 @@ class CNNProjector(nn.Module):
                     nn.ReLU()
                 )
             )
+
+    # def init_weights(self):
+    #     pass
+
     @force_fp32(apply_to=('x',))
     def forward(self, x):
         for layer in self.layers:
