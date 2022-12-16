@@ -298,8 +298,8 @@ class BEVFusion(Base3DFusionModel):
             if self.pretraining:
                 #TODO: add pretraining 
                 #FIXME: add pretraining
-                roi_lidar_feature = self.roi_align(features[1], pooled_bbox)
-                roi_camera_feature = self.roi_align(features[0], pooled_bbox)
+                roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
+                roi_camera_feature = self.roi_align(features[1], pooled_bbox)
                 projected_lidar_feaure = self.lidar_projector(roi_lidar_feature)
                 projected_camera_feature = self.camera_projector(roi_camera_feature)
                 print(projected_lidar_feaure.shape,projected_camera_feature.shape)
