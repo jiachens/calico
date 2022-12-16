@@ -69,7 +69,7 @@ class BEVFusion(Base3DFusionModel):
             self.camera_projector = build_projector(calico["camera_projector"])
             from torchvision.ops import RoIAlign
             self.roi_align = RoIAlign(**calico["roi_align"])
-            self.loss = build_loss(calico["loss"])
+            self.pretrain_loss = build_loss(calico["loss"])
         # else:
         self.decoder = nn.ModuleDict(
             {
@@ -197,7 +197,7 @@ class BEVFusion(Base3DFusionModel):
         gt_bboxes_3d=None,
         gt_labels_3d=None,
         **kwargs,
-    ):
+    ):  
         if isinstance(img, list):
             raise NotImplementedError
         else:
