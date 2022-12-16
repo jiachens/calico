@@ -15,8 +15,7 @@ class CNNProjector(nn.Module):
                  stride,
                  ):
         super().__init__()
-        self.layers = []
-
+        self.layers = nn.ModuleList()
         for i in range(len(channels) - 1):
             self.layers.append(
                 nn.Sequential(
