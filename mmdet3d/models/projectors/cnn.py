@@ -32,5 +32,5 @@ class CNNProjector(nn.Module):
     def forward(self, x):
         for layer in self.layers:
             x = layer(x)
-        x = F.adaptive_avg_pool2d(x, 1).squeeze(-1)
+        x = F.adaptive_avg_pool2d(x, 1).squeeze()
         return x
