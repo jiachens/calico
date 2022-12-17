@@ -287,6 +287,7 @@ class BEVFusion(Base3DFusionModel):
         if not self.training and not self.pretraining:
             # avoid OOM
             features = features[::-1]
+        batch_size = features[0].shape[0]
 
         if not self.pretraining:
             if self.fuser is not None:
@@ -297,7 +298,6 @@ class BEVFusion(Base3DFusionModel):
             x = self.decoder["backbone"](x)
             x = self.decoder["neck"](x)
 
-        batch_size = x.shape[0]
         if self.training:
             outputs = {}
             if self.pretraining:
