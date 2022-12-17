@@ -122,6 +122,8 @@ def train_model(
 
     if cfg.resume_from:
         runner.resume(cfg.resume_from)
+    # https://github.com/open-mmlab/mmcv/blob/46eb9ec5d07ea344ed43056d007a7eb71dc3ee98/mmcv/runner/checkpoint.py#L612
+    #TODO: load_checkpoint from pre-trained model
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
     print("start training!")

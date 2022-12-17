@@ -1,18 +1,15 @@
 model:
   fuser:
-    # type: ConvFuser
-    # in_channels: [80, 256]
-    # out_channels: 256
 
   calico:
     lidar_projector:
       type: CNNProjector
-      channels: [80, 256, 128]
+      channels: [80, 256, 128, 64]
       kernel_size: 3
       stride: 1
     camera_projector:
       type: CNNProjector    
-      channels: [256, 256, 128]
+      channels: [256, 256, 128, 64]
       kernel_size: 3
       stride: 1
 
@@ -23,3 +20,11 @@ model:
       spatial_scale: 0.125
       output_size: 7
       sampling_ratio: 2
+
+data:
+  samples_per_gpu: 8
+
+optimizer:
+  type: AdamW
+  lr: 1.0e-3
+  weight_decay: 0.01
