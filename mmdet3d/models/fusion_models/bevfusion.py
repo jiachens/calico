@@ -4,6 +4,8 @@ import torch
 from mmcv.runner import auto_fp16, force_fp32
 from torch import nn
 from torch.nn import functional as F
+from torchpack import distributed as dist
+
 
 from mmdet3d.models.builder import (
     build_backbone,
@@ -70,6 +72,10 @@ class BEVFusion(Base3DFusionModel):
             self.camera_projector = build_projector(calico["camera_projector"])
             from torchvision.ops import RoIAlign
             self.roi_align = RoIAlign(**calico["roi_align"])
+            calico["loss"]["gather_with_grad"] = True
+            calico["loss"]["cache_labels"] = True
+            calico["loss"]["rank"] = dist.rank()
+            calico["loss"]["world_size"] = dist.size()
             self.pretrain_loss = build_loss(calico["loss"])
         else:
             self.pretraining = False

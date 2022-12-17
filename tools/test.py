@@ -114,7 +114,6 @@ def main():
     args = parse_args()
     print('start dist init...')
     dist.init()
-
     torch.backends.cudnn.benchmark = True
     torch.cuda.set_device(dist.local_rank())
     assert args.out or args.eval or args.format_only or args.show or args.show_dir, (
