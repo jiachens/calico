@@ -22,7 +22,7 @@ model:
       sampling_ratio: 2
 
 data:
-  samples_per_gpu: 6
+  samples_per_gpu: 4
 
 optimizer:
   type: AdamW
