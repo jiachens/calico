@@ -31,7 +31,7 @@ def nuscenes_data_prep(
         nuscenes_converter.create_nuscenes_infos(
             root_path, info_prefix, version=version, max_sweeps=max_sweeps
         )
-
+        #TODO change the above code to have few-shot learning settings
         # if version == "v1.0-test":
         #     info_test_path = osp.join(root_path, f"{info_prefix}_infos_test.pkl")
         #     nuscenes_converter.export_2d_annotation(root_path, info_test_path, version=version)
@@ -41,7 +41,7 @@ def nuscenes_data_prep(
         # info_val_path = osp.join(root_path, f"{info_prefix}_infos_val.pkl")
         # nuscenes_converter.export_2d_annotation(root_path, info_train_path, version=version)
         # nuscenes_converter.export_2d_annotation(root_path, info_val_path, version=version)
-
+    #TODO: ignore the below part while creating few-shot learning dataset
     create_groundtruth_database(
         dataset_name,
         root_path,

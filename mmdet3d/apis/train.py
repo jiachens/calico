@@ -126,5 +126,9 @@ def train_model(
     #TODO: load_checkpoint from pre-trained model
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
-    print("start training!")
-    runner.run(data_loaders, [("train", 1)])
+    if cfg.model.calico is not None:
+        print("start pre-training!")        
+        runner.run(data_loaders, [("train", cfg.max_epochs+1)])
+    else:
+        print("start training!")        
+        runner.run(data_loaders, [("train", 1)])

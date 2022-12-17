@@ -294,17 +294,13 @@ class BEVFusion(Base3DFusionModel):
             else:
                 assert len(features) == 1, features
                 x = features[0]
-
-            batch_size = x.shape[0]
-
             x = self.decoder["backbone"](x)
             x = self.decoder["neck"](x)
 
+        batch_size = x.shape[0]
         if self.training:
             outputs = {}
             if self.pretraining:
-                #TODO: add pretraining 
-                #FIXME: add pretraining
                 roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
                 roi_camera_feature = self.roi_align(features[1], pooled_bbox)
                 projected_lidar_feaure = self.lidar_projector(roi_lidar_feature)
@@ -328,6 +324,8 @@ class BEVFusion(Base3DFusionModel):
             return outputs
         else:
             outputs = [{} for _ in range(batch_size)]
+            if self.pretraining:
+                return outputs
             for type, head in self.heads.items():
                 if type == "object":
                     pred_dict = head(x, metas)

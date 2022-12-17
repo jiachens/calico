@@ -26,5 +26,5 @@ data:
 
 optimizer:
   type: AdamW
-  lr: 1.0e-3
+  lr: 1.0e-4
   weight_decay: 0.01
