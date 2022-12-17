@@ -117,7 +117,7 @@ def main():
 
     torch.backends.cudnn.benchmark = True
     torch.cuda.set_device(dist.local_rank())
-
+    print(dist.world_size(), dist.local_rank())
     assert args.out or args.eval or args.format_only or args.show or args.show_dir, (
         "Please specify at least one operation (save/eval/format/show the "
         'results / save the results) with the argument "--out", "--eval"'
