@@ -1,0 +1,30 @@
+model:
+  fuser:
+
+  calico:
+    lidar_projector:
+      type: CNNProjector
+      channels: [80, 256, 128, 64]
+      kernel_size: 3
+      stride: 1
+    camera_projector:
+      type: CNNProjector    
+      channels: [256, 256, 128, 64]
+      kernel_size: 3
+      stride: 1
+
+    loss:
+      type: ClipLoss
+      
+    roi_align:
+      spatial_scale: 0.125
+      output_size: 
+      sampling_ratio: 2
+
+data:
+  samples_per_gpu: 4
+
+optimizer:
+  type: AdamW
+  lr: 1.0e-4
+  weight_decay: 0.01

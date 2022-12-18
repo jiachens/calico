@@ -151,7 +151,7 @@ train_pipeline:
     classes: ${object_classes}
   -
     type: BBoxTransformer
-    voxel_size: [0.75,0.75]
+    voxel_size: [0.075,0.075]
     num_bbox: 10
     bev_range: [-54., -54., 54., 54.]
   -
@@ -246,7 +246,7 @@ test_pipeline:
     point_cloud_range: ${point_cloud_range}
   -
     type: BBoxTransformer
-    voxel_size: [0.75,0.75]
+    voxel_size: [0.075,0.075]
     num_bbox: 10
     bev_range: [-54., -54., 54., 54.]
   -
