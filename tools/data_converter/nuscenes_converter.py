@@ -40,7 +40,7 @@ nus_attributes = (
 
 
 def create_nuscenes_infos(
-    root_path, info_prefix, version="v1.0-trainval", max_sweeps=10
+    root_path, info_prefix, version="v1.0-trainval", max_sweeps=10, fewshot=1.0
 ):
     """Create info file of nuscene dataset.
 
@@ -78,6 +78,9 @@ def create_nuscenes_infos(
     available_scene_names = [s["name"] for s in available_scenes]
     train_scenes = list(filter(lambda x: x in available_scene_names, train_scenes))
     val_scenes = list(filter(lambda x: x in available_scene_names, val_scenes))
+    
+    train_scenes = train_scenes[::int(1/fewshot)]
+    
     train_scenes = set(
         [
             available_scenes[available_scene_names.index(s)]["token"]
@@ -112,7 +115,10 @@ def create_nuscenes_infos(
             )
         )
         data = dict(infos=train_nusc_infos, metadata=metadata)
-        info_path = osp.join(root_path, "{}_infos_train.pkl".format(info_prefix))
+        if fewshot == 1.:
+            info_path = osp.join(root_path, "{}_infos_train.pkl".format(info_prefix))
+        else:
+            info_path = osp.join(root_path, "{}_infos_train_{}.pkl".format(info_prefix,fewshot))
         mmcv.dump(data, info_path)
         data["infos"] = val_nusc_infos
         info_val_path = osp.join(root_path, "{}_infos_val.pkl".format(info_prefix))
@@ -179,6 +185,8 @@ def _fill_trainval_infos(nusc, train_scenes, val_scenes, test=False, max_sweeps=
     val_nusc_infos = []
 
     for sample in mmcv.track_iter_progress(nusc.sample):
+        if sample["scene_token"] not in train_scenes and sample["scene_token"] not in val_scenes:
+            continue
         lidar_token = sample["data"]["LIDAR_TOP"]
         sd_rec = nusc.get("sample_data", sample["data"]["LIDAR_TOP"])
         cs_record = nusc.get("calibrated_sensor", sd_rec["calibrated_sensor_token"])
@@ -286,7 +294,7 @@ def _fill_trainval_infos(nusc, train_scenes, val_scenes, test=False, max_sweeps=
 
         if sample["scene_token"] in train_scenes:
             train_nusc_infos.append(info)
-        else:
+        elif sample["scene_token"] in val_scenes:
             val_nusc_infos.append(info)
 
     return train_nusc_infos, val_nusc_infos
