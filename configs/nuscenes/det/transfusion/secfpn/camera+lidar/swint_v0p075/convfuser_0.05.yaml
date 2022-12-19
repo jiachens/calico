@@ -4,4 +4,8 @@ model:
     in_channels: [80, 256]
     out_channels: 256
 
+data:
+  train:
+    dataset:
+      ann_file: ${dataset_root + "nuscenes_infos_train_0.05.pkl"}
 # load_from: "/workspace/jiachen_results/calico/epoch_20_lr_1e-4/latest.pth"
