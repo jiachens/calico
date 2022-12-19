@@ -1,6 +1,6 @@
 model:
   fuser:
-
+  
   calico:
     lidar_projector:
       type: CNNProjector
