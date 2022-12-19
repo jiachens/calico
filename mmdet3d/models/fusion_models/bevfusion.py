@@ -104,6 +104,7 @@ class BEVFusion(Base3DFusionModel):
 
 
         self.init_weights()
+        self.counter = 0
 
     def init_weights(self) -> None:
         if "camera" in self.encoders:
@@ -251,14 +252,13 @@ class BEVFusion(Base3DFusionModel):
         gt_labels_3d=None,
         **kwargs,
     ):  
-        ## TEST CORRECTNESS ### TODO: remove me later
-        # import time
-        # from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
-        # pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.75 - 54.0
-        # pooled_bbox[0][:,1::2] = pooled_bbox[0][:,1::2] * 0.75 - 54.0
-        # draw_pointcloud_polygon_matplotlib(points[0].cpu().numpy(), bboxes = pooled_bbox[0].cpu().numpy(),save='./data/temp_test/'+str(self.counter)+'.png')
-        # self.counter += 1
-        #######################
+        # TEST CORRECTNESS ### TODO: remove me later
+        from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
+        pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.075 - 54.0
+        pooled_bbox[0][:,1::2] = pooled_bbox[0][:,1::2] * 0.075 - 54.0
+        draw_pointcloud_polygon_matplotlib(points[0].cpu().numpy(), bboxes = pooled_bbox[0].cpu().numpy(),save='./data/temp_test/'+str(self.counter)+'.png')
+        self.counter += 1
+        ######################
         features = []
         for sensor in (
             self.encoders if self.training else list(self.encoders.keys())[::-1]
@@ -305,6 +305,10 @@ class BEVFusion(Base3DFusionModel):
                 roi_camera_feature = self.roi_align(features[1], pooled_bbox)
                 projected_lidar_feaure = self.lidar_projector(roi_lidar_feature)
                 projected_camera_feature = self.camera_projector(roi_camera_feature)
+                ##L2 normalize################
+                projected_lidar_feaure = F.normalize(projected_lidar_feaure, p=2, dim=1)
+                projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
+                ##############################
                 loss = self.pretrain_loss(projected_camera_feature,projected_lidar_feaure, 1.0)
                 outputs['loss/pretrain/calico'] = loss
             else:
