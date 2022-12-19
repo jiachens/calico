@@ -152,7 +152,7 @@ train_pipeline:
   -
     type: BBoxTransformer
     voxel_size: [0.075,0.075]
-    num_bbox: 10
+    num_bbox: 40
     bev_range: [-54., -54., 54., 54.]
   -
     type: ImageNormalize
@@ -204,9 +204,9 @@ test_pipeline:
     use_dim: ${use_dim}
     reduce_beams: ${reduce_beams}
     load_augmented: ${load_augmented}
-  -
-    type: LoadPooledBBox
-    method: semantic
+  # -
+  #   type: LoadPooledBBox
+  #   method: semantic
   -
     type: LoadPointsFromMultiSweeps
     sweeps_num: 9
@@ -244,11 +244,11 @@ test_pipeline:
   -
     type: PointsRangeFilter
     point_cloud_range: ${point_cloud_range}
-  -
-    type: BBoxTransformer
-    voxel_size: [0.075,0.075]
-    num_bbox: 40
-    bev_range: [-54., -54., 54., 54.]
+  # -
+  #   type: BBoxTransformer
+  #   voxel_size: [0.075,0.075]
+  #   num_bbox: 40
+  #   bev_range: [-54., -54., 54., 54.]
   -
     type: ImageNormalize
     mean: [0.485, 0.456, 0.406]
