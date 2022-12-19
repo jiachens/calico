@@ -253,11 +253,11 @@ class BEVFusion(Base3DFusionModel):
         **kwargs,
     ):  
         # TEST CORRECTNESS ### TODO: remove me later
-        from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
-        pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.075 - 54.0
-        pooled_bbox[0][:,1::2] = pooled_bbox[0][:,1::2] * 0.075 - 54.0
-        draw_pointcloud_polygon_matplotlib(points[0].cpu().numpy(), bboxes = pooled_bbox[0].cpu().numpy(),save='./data/temp_test/'+str(self.counter)+'.png')
-        self.counter += 1
+        # from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
+        # pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.075 - 54.0
+        # pooled_bbox[0][:,1::2] = pooled_bbox[0][:,1::2] * 0.075 - 54.0
+        # draw_pointcloud_polygon_matplotlib(points[0].cpu().numpy(), bboxes = pooled_bbox[0].cpu().numpy(),save='./data/temp_test/'+str(self.counter)+'.png')
+        # self.counter += 1
         ######################
         features = []
         for sensor in (
