@@ -15,19 +15,20 @@ class CNNProjector(nn.Module):
                  ):
         super().__init__()
         self.layers = nn.ModuleList()
-        for i in range(len(channels) - 2):
+        for i in range(len(channels) - 1):
             self.layers.append(
                 nn.Sequential(
                     nn.Conv2d(channels[i], channels[i + 1], kernel_size=kernel_size, stride=stride, padding='valid'),
-                    nn.BatchNorm2d(channels[i + 1])                
+                    nn.BatchNorm2d(channels[i + 1]),        
+                    nn.ReLU()        
                     )
             )
-        self.last = nn.Conv2d(channels[-2], channels[-1], kernel_size=kernel_size, stride=stride, padding='valid')
+        self.last = nn.Linear(channels[-1], channels[-1])
 
     @force_fp32(apply_to=('x',))
     def forward(self, x):
         for layer in self.layers:
             x = layer(x)
-        x = self.last(x)
         x = F.adaptive_max_pool2d(x, 1).squeeze()
+        x = self.last(x)
         return x
