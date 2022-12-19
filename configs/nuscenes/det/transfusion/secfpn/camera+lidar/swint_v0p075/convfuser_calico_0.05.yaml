@@ -5,6 +5,7 @@ model:
     out_channels: 256
 data:
   train:
+  train:
     dataset:
       ann_file: ${dataset_root + "nuscenes_infos_train_0.05.pkl"}
 
