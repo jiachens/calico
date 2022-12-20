@@ -72,7 +72,7 @@ class ClipLoss(nn.Module):
     def __init__(
             self,
             local_loss=False,
-            batch_loss=False,
+            batch_loss=[False,-1],
             gather_with_grad=False,
             cache_labels=False,
             rank=0,
@@ -86,7 +86,7 @@ class ClipLoss(nn.Module):
         self.rank = rank
         self.world_size = world_size
         self.use_horovod = use_horovod
-
+        self.batch_loss, self.batch_size = batch_loss[0], batch_loss[1]
         # cache state
         self.prev_num_logits = 0
         self.labels = {}
@@ -94,43 +94,58 @@ class ClipLoss(nn.Module):
     def forward(self, image_features, text_features, logit_scale):
         device = image_features.device
 
-        if self.local_loss:
+        if self.batch_loss:
+            image_features = image_features.reshape(self.batch_size, -1, image_features.shape[-1])
+            text_features = text_features.reshape(self.batch_size, -1, text_features.shape[-1])
+            logits_image = logit_scale * torch.bmm(image_features, text_features.permute(0, 2, 1))
+            logits_text =  logit_scale * torch.bmm(text_features, image_features.permute(0, 2, 1))
+
+        elif self.local_loss:
             logits_per_image = logit_scale * image_features @ text_features.T
             logits_per_text = logit_scale * text_features @ image_features.T
 
-        else:
-            if self.world_size > 1:
-                all_image_features, all_text_features = gather_features(
-                    image_features, text_features,
-                    self.local_loss, self.gather_with_grad, self.rank, self.world_size, self.use_horovod)
+        elif self.world_size > 1:
+            all_image_features, all_text_features = gather_features(
+                image_features, text_features,
+                self.local_loss, self.gather_with_grad, self.rank, self.world_size, self.use_horovod)
 
-                # if self.local_loss:
-                #     logits_per_image = logit_scale * image_features @ all_text_features.T
-                #     logits_per_text = logit_scale * text_features @ all_image_features.T
-                # else:
-                logits_per_image = logit_scale * all_image_features @ all_text_features.T
-                logits_per_text = logits_per_image.T
+            # if self.local_loss:
+            #     logits_per_image = logit_scale * image_features @ all_text_features.T
+            #     logits_per_text = logit_scale * text_features @ all_image_features.T
+            # else:
+            logits_per_image = logit_scale * all_image_features @ all_text_features.T
+            logits_per_text = logits_per_image.T
 
-            else:
-                logits_per_image = logit_scale * image_features @ text_features.T
-                logits_per_text = logit_scale * text_features @ image_features.T
+        else: ## default
+            logits_per_image = logit_scale * image_features @ text_features.T
+            logits_per_text = logit_scale * text_features @ image_features.T
 
         # calculated ground-truth and cache if enabled
-        num_logits = logits_per_image.shape[0]
-        # if self.prev_num_logits != num_logits or device not in self.labels:
-        #     labels = torch.arange(num_logits, device=device, dtype=torch.long)                
-        #     if self.world_size > 1 and not self.local_loss:
-        #         labels = labels + num_logits * self.rank
-        #     if self.cache_labels:
-        #         self.labels[device] = labels
-        #         self.prev_num_logits = num_logits
-        # else:
-        #     labels = self.labels[device]
+        if self.batch_loss:
+            total_loss = 0
+            num_logits = logits_image.shape[1]
+            labels = torch.arange(num_logits, device=device, dtype=torch.long)
+            for i in range(self.batch_size):
+                total_loss += (
+                    F.cross_entropy(logits_image[i], labels) +
+                    F.cross_entropy(logits_text[i], labels)
+                ) / 2
+        else:
+            num_logits = logits_per_image.shape[0]
+            # if self.prev_num_logits != num_logits or device not in self.labels:
+            #     labels = torch.arange(num_logits, device=device, dtype=torch.long)                
+            #     if self.world_size > 1 and not self.local_loss:
+            #         labels = labels + num_logits * self.rank
+            #     if self.cache_labels:
+            #         self.labels[device] = labels
+            #         self.prev_num_logits = num_logits
+            # else:
+            #     labels = self.labels[device]
 
-        labels = torch.arange(num_logits, device=device, dtype=torch.long)
+            labels = torch.arange(num_logits, device=device, dtype=torch.long)
 
-        total_loss = (
-            F.cross_entropy(logits_per_image, labels) +
-            F.cross_entropy(logits_per_text, labels)
-            ) / 2
+            total_loss = (
+                F.cross_entropy(logits_per_image, labels) +
+                F.cross_entropy(logits_per_text, labels)
+                ) / 2
         return total_loss
