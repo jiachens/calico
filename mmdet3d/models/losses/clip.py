@@ -72,6 +72,7 @@ class ClipLoss(nn.Module):
     def __init__(
             self,
             local_loss=False,
+            batch_loss=False,
             gather_with_grad=False,
             cache_labels=False,
             rank=0,
@@ -108,7 +109,7 @@ class ClipLoss(nn.Module):
             # else:
             logits_per_image = logit_scale * all_image_features @ all_text_features.T
             logits_per_text = logits_per_image.T
-            
+
         else:
             logits_per_image = logit_scale * image_features @ text_features.T
             logits_per_text = logit_scale * text_features @ image_features.T

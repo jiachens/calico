@@ -77,7 +77,7 @@ class BEVFusion(Base3DFusionModel):
             from torchvision.ops import RoIAlign
             self.roi_align = RoIAlign(**calico["roi_align"])
             calico["loss"]["gather_with_grad"] = True
-            calico["loss"]["cache_labels"] = True
+            calico["loss"]["cache_labels"] = False
             calico["loss"]["rank"] = dist.rank()
             calico["loss"]["world_size"] = dist.size()
             self.pretrain_loss = build_loss(calico["loss"])
