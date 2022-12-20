@@ -16,6 +16,7 @@ model:
     #   stride: 1
     loss:
       type: ClipLoss
+      local_loss: True
       
     roi_align:
       spatial_scale: 0.125
