@@ -19,7 +19,7 @@ model:
       
     roi_align:
       spatial_scale: 0.125
-      output_size: 
+      output_size: 7
       sampling_ratio: 2
 
 data:
