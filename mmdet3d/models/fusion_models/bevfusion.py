@@ -68,8 +68,12 @@ class BEVFusion(Base3DFusionModel):
         if calico is not None:
             ##TODO: add calico
             self.pretraining = True
-            self.lidar_projector = build_projector(calico["lidar_projector"])
-            self.camera_projector = build_projector(calico["camera_projector"])
+            if calico["lidar_projector"]["type"] == "SharedProjector":
+                self.lidar_projector = build_projector(calico["lidar_projector"])
+                self.camera_projector = self.lidar_projector
+            else:
+                self.lidar_projector = build_projector(calico["lidar_projector"])
+                self.camera_projector = build_projector(calico["camera_projector"])
             from torchvision.ops import RoIAlign
             self.roi_align = RoIAlign(**calico["roi_align"])
             calico["loss"]["gather_with_grad"] = True
@@ -303,8 +307,8 @@ class BEVFusion(Base3DFusionModel):
             if self.pretraining:
                 roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
                 roi_camera_feature = self.roi_align(features[1], pooled_bbox)
-                projected_lidar_feaure = self.lidar_projector(roi_lidar_feature)
-                projected_camera_feature = self.camera_projector(roi_camera_feature)
+                projected_lidar_feaure = self.lidar_projector(roi_lidar_feature,'lidar')
+                projected_camera_feature = self.camera_projector(roi_camera_feature,'camera')
                 ##L2 normalize################
                 projected_lidar_feaure = F.normalize(projected_lidar_feaure, p=2, dim=1)
                 projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)

@@ -23,7 +23,7 @@ class MLPProjector(nn.Module):
             )
 
     @force_fp32(apply_to=('x',))
-    def forward(self, x):
+    def forward(self, x, modal=None):
         for layer in self.layers:
             x = layer(x)
         x = F.adaptive_avg_pool2d(x, 1).squeeze()
