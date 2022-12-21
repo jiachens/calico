@@ -130,6 +130,7 @@ class ClipLoss(nn.Module):
                     F.cross_entropy(logits_image[i], labels) +
                     F.cross_entropy(logits_text[i], labels)
                 ) / 2
+            total_loss /= self.batch_size
         else:
             num_logits = logits_per_image.shape[0]
             # if self.prev_num_logits != num_logits or device not in self.labels:
