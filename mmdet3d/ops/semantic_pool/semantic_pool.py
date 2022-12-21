@@ -21,11 +21,13 @@ def filter_segmentation(pointcloud_segments, in_lane_mask=None, point_height=Non
         _,ret,_ = cv2.minAreaRect(cnt)
         if max(np.abs(pointcloud_segment[:,1])) < 1.5 or max(np.abs(pointcloud_segment[:,0])) < 1.5: ## filter out ego vehicle
             continue
-        if max(pointcloud_segment[:,2]) < -lidar_height + 0.25: ## too close to the ground
+        if max(pointcloud_segment[:,2]) < -lidar_height + 0.25 or max(pointcloud_segment[:,2]) > 3.: ## too close to the ground
             continue
         if max(ret) == 0 or min(ret)/max(ret) < 0.1: ## too thin to have rich context
             continue
         if polygon.area > 20: ## too large area usually means the segment is not a object
+            continue
+        if polygon.area < 0.25: ## too small area usually means the segment is not a object
             continue
         if in_lane_mask is not None:
             #TODO on-road objects filtering
@@ -71,7 +73,9 @@ def lidar_segmentation_dbscan_sklearn(full_pcd, ground_indices, cluster_thres=0.
     non_ground_mask = np.ones(full_pcd.shape[0]).astype(bool)
     non_ground_mask[ground_indices] = False
     non_ground_indices = np.argwhere(non_ground_mask > 0).reshape(-1)
-    pcd = full_pcd[non_ground_mask,:3]
+    pcd = full_pcd[non_ground_mask,:2]
+    # filter_indices = np.argwhere((pcd[:,2] > -5.) & (pcd[:,2] < 3.)).reshape(-1)
+    # pcd = pcd[filter_indices,:2]
     clustering = DBSCAN(eps=cluster_thres, min_samples=min_point_num).fit(pcd)
     labels = clustering.labels_
     info = []
@@ -204,5 +208,5 @@ if __name__ == '__main__':
         bboxes = generate_bbox(pointcloud_segments)
         bbox_path = str(pcd_path).replace('LIDAR_TOP','POOLED_BBOX')
         bbox_path = bbox_path.replace('pcd.bin','npy')
-        np.save(bbox_path,bboxes)
-        # draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
+        # np.save(bbox_path,bboxes)
+        draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
