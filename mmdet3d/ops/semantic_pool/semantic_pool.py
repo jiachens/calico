@@ -190,7 +190,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
        
     nusc = NuScenes(version='v1.0-trainval', dataroot=args.dataroot, verbose=True)
-    bbox_path = os.path.join(args.dataroot,'samples/POOLED_BBOX')
+    bbox_path = os.path.join(args.dataroot,'samples/POOLED_BBOX_2')
     os.makedirs(bbox_path,exist_ok=True)
 
     for index in range(0, len(nusc.sample)):
@@ -208,5 +208,5 @@ if __name__ == '__main__':
         bboxes = generate_bbox(pointcloud_segments)
         bbox_path = str(pcd_path).replace('LIDAR_TOP','POOLED_BBOX')
         bbox_path = bbox_path.replace('pcd.bin','npy')
-        # np.save(bbox_path,bboxes)
-        draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
+        np.save(bbox_path,bboxes)
+        # draw_mutlti_cluster_polygon_matplotlib(pointcloud_segments,bboxes=bboxes,save='./data/temp_test/segments_'+str(index)+'.png')
