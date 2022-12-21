@@ -190,7 +190,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
        
     nusc = NuScenes(version='v1.0-trainval', dataroot=args.dataroot, verbose=True)
-    bbox_path = os.path.join(args.dataroot,'samples/POOLED_BBOX_2')
+    bbox_path = os.path.join(args.dataroot,'samples/POOLED_BBOX')
     os.makedirs(bbox_path,exist_ok=True)
 
     for index in range(0, len(nusc.sample)):
