@@ -51,7 +51,7 @@ class SharedProjector(nn.Module):
             self.layers.append(
                 nn.Sequential(
                     nn.Conv2d(channels[i], channels[i + 1], kernel_size=kernel_size, stride=stride, padding='valid'),
-                    # nn.BatchNorm2d(channels[i + 1]),        
+                    nn.BatchNorm2d(channels[i + 1]),        
                     nn.ReLU()        
                     )
             )
