@@ -131,4 +131,4 @@ def train_model(
         runner.run(data_loaders, [("train", cfg.max_epochs+1)])
     else:
         print("start training!")        
-        runner.run(data_loaders, [("train", 1)])
+        runner.run(data_loaders, [("train", 5),('val',1)])
