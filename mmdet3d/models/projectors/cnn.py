@@ -5,7 +5,6 @@ from mmcv.runner import auto_fp16, force_fp32
 
 from mmdet3d.models.builder import PROJECTORS
 
-
 @PROJECTORS.register_module()
 class CNNProjector(nn.Module):
     def __init__(self,
