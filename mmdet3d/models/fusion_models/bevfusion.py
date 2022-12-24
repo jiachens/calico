@@ -313,7 +313,7 @@ class BEVFusion(Base3DFusionModel):
                 projected_lidar_feaure = F.normalize(projected_lidar_feaure, p=2, dim=1)
                 projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
-                loss = self.pretrain_loss(projected_camera_feature,projected_lidar_feaure, 1.0)
+                loss = self.pretrain_loss(projected_camera_feature,projected_lidar_feaure, 10.0)
                 outputs['loss/pretrain/calico'] = loss
             else:
                 for type, head in self.heads.items():
