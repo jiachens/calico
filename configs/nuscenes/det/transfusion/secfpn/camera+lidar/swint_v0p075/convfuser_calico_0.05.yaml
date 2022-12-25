@@ -9,3 +9,8 @@ data:
       ann_file: ${dataset_root + "nuscenes_infos_train_0.05.pkl"}
 
 load_from: "/workspace/jiachen_results/calico_new/epoch_20_lr_1e-4_batch_loss_temp_10/latest.pth"
+
+optimizer:
+  type: AdamW
+  lr: 1.0e-5
+  weight_decay: 0.01
