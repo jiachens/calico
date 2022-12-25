@@ -187,7 +187,7 @@ def main():
     try:
         checkpoint = load_checkpoint(model, args.checkpoint, map_location="cpu")
     except FileNotFoundError as e:
-        print(f"checkpoint not found: {args.checkpoint}, use random init")
+        print(f"checkpoint not found: {args.checkpoint}, use random init (usually this is a testing mode)")
     if args.fuse_conv_bn:
         model = fuse_conv_bn(model)
     # old versions did not save class info in checkpoints, this walkaround is
