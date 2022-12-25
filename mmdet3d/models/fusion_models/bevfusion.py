@@ -335,7 +335,9 @@ class BEVFusion(Base3DFusionModel):
             if self.pretraining:
                 import torchvision
                 gray_scale_1 = torch.sum(features[0].squeeze(),0)
+                gray_scale_1 = gray_scale_1 / features[0].shape[0]
                 gray_scale_2 = torch.sum(features[1].squeeze(),0)
+                gray_scale_2 = gray_scale_2 / features[0].shape[0]
                 torchvision.utils.save_image([gray_scale_1,gray_scale_2], './data/temp_test/'+str(self.counter)+'.png')
                 self.counter += 1
                 return outputs
