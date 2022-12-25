@@ -343,8 +343,8 @@ class BEVFusion(Base3DFusionModel):
 
                 gray_scale_2 = torch.sum(features[1].squeeze(),0)
                 gray_scale_2 = gray_scale_2 / features[1].shape[0]
-                img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),(pooled_bbox//8),colors="red")
-                img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),(pooled_bbox//8),colors="red")
+                img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),(torch.stack(pooled_bbox)//8),colors="red")
+                img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),(torch.stack(pooled_bbox)//8),colors="red")
                 saved_image = torchvision.utils.make_grid([img1,img2], nrow=1, normalize=True, scale_each=True)
                 torchvision.utils.save_image(saved_image, '/workspace/jiachen_results/'+str(self.counter)+'.png')
                 self.counter += 1
