@@ -184,10 +184,7 @@ def main():
     if fp16_cfg is not None:
         wrap_fp16_model(model)
     print('building model...')
-    try:
-        checkpoint = load_checkpoint(model, args.checkpoint, map_location="cpu")
-    except FileNotFoundError as e:
-        print(f"checkpoint not found: {args.checkpoint}, use random init (usually this is a testing mode)")
+    checkpoint = load_checkpoint(model, args.checkpoint, map_location="cpu")
     if args.fuse_conv_bn:
         model = fuse_conv_bn(model)
     # old versions did not save class info in checkpoints, this walkaround is
