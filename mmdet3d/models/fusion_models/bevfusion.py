@@ -336,10 +336,11 @@ class BEVFusion(Base3DFusionModel):
                 import torchvision
                 gray_scale_1 = torch.sum(features[0].squeeze(),0)
                 gray_scale_1 = gray_scale_1 / features[0].shape[0]
+                
                 gray_scale_2 = torch.sum(features[1].squeeze(),0)
                 gray_scale_2 = gray_scale_2 / features[1].shape[0]
                 # print(gray_scale_1.shape,gray_scale_2.shape)
-                torchvision.utils.save_image([gray_scale_1,gray_scale_2], '/workspace/jiachen_results/'+str(self.counter)+'.png', nrow=1)
+                torchvision.utils.save_image([gray_scale_1,gray_scale_2], '/workspace/jiachen_results/'+str(self.counter)+'.png', nrow=1, normalize=True)
                 self.counter += 1
                 return outputs
             for type, head in self.heads.items():
