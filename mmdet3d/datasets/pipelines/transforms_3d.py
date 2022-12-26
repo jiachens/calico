@@ -144,7 +144,6 @@ class GlobalRotScaleTrans:
 
             if "pooled_bbox" in data:
                 pooled_bbox = data["pooled_bbox"]
-                #TODO: check if this is correct
                 pooled_bbox.rotate(theta)
                 pooled_bbox.translate(translation)
                 pooled_bbox.scale(scale)
