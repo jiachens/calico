@@ -12,5 +12,5 @@ load_from: "/workspace/jiachen_results/calico_new/epoch_20_lr_1e-4_batch_loss_te
 
 optimizer:
   type: AdamW
-  lr: 1.0e-5
+  lr: 1.0e-4
   weight_decay: 0.01
