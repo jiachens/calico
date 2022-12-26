@@ -548,8 +548,10 @@ class BBoxTransformer:
             pooled_bbox.shuffle()
             pooled_bbox = pooled_bbox[0:self.num_bbox]
 
+        ####FIXME: this is a hack to make the bbox in the right format
         pooled_bbox.rotate(0.5*np.pi)
         pooled_bbox.flip('horizontal')
+        ##############################################################
 
         pooled_bbox.tensor[:,0::2] = (pooled_bbox.tensor[:,0::2] - self.bev_range[0]) / self.voxel_size[0]
         pooled_bbox.tensor[:,1::2] = (pooled_bbox.tensor[:,1::2] - self.bev_range[1]) / self.voxel_size[1]
