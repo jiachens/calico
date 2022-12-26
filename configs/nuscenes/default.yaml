@@ -222,8 +222,6 @@ test_pipeline:
     with_label_3d: true
     with_attr_label: False
   -
-    type: RandomFlip3D
-  -
     type: ImageAug3D
     final_dim: ${image_size}
     resize_lim: ${augment2d.resize[1]}
@@ -243,6 +241,8 @@ test_pipeline:
     rot_lim: ${augment3d.rotate}
     trans_lim: ${augment3d.translate}
     is_train: true
+  -
+    type: RandomFlip3D
   -
     type: LoadBEVSegmentation
     dataset_root: ${dataset_root}
