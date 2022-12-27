@@ -304,6 +304,8 @@ class BEVFusion(Base3DFusionModel):
             x = self.decoder["neck"](x)
 
         if self.training:
+            self.counter = 0
+            print(self.save_dir+str(self.counter)+'.png')
             outputs = {}
             if self.pretraining:
                 number_bbox = pooled_bbox[0].shape[0]
@@ -360,6 +362,7 @@ class BEVFusion(Base3DFusionModel):
                     img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
                     # saved_image = torchvision.utils.make_grid([img1,img2], nrow=1)
                     torchvision.utils.save_image([img1,img2], self.save_dir+str(self.counter)+'.png')
+                self.counter += 1
                 return outputs
             for type, head in self.heads.items():
                 if type == "object":
