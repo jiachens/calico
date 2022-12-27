@@ -512,7 +512,7 @@ class ObjectRangeFilter:
 
 @PIPELINES.register_module()
 class BBoxTransformer:
-    def __init__(self, voxel_size=[0.75,0.75], num_bbox=10, bev_range=[-54., -54., 54., 54.]):
+    def __init__(self, voxel_size=[0.075,0.075], num_bbox=20, bev_range=[-54., -54., 54., 54.]):
         self.voxel_size = voxel_size
         self.num_bbox = num_bbox
         self.bev_range = bev_range
@@ -537,15 +537,17 @@ class BBoxTransformer:
         pooled_bbox = data['pooled_bbox']
         mask = pooled_bbox.in_range_bev(self.bev_range)
         pooled_bbox = pooled_bbox[mask]
-        if self.num_bbox == -1:
-            pass
-        elif self.num_bbox > pooled_bbox.tensor.shape[0]:
+
+        if self.num_bbox > pooled_bbox.tensor.shape[0]:
             random_bbox = self._generate_bbox(self.num_bbox-pooled_bbox.tensor.shape[0], self.bev_range)
             pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
             # raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
         else:
             pooled_bbox.shuffle()
             pooled_bbox = pooled_bbox[0:self.num_bbox]
+        
+        negative_bbox = self._generate_bbox(self.num_bbox, self.bev_range)
+        pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, negative_bbox], dim=0)
 
         ####FIXME: this is a hack to make the bbox in the right format
         pooled_bbox.rotate(0.5*np.pi)

@@ -305,16 +305,28 @@ class BEVFusion(Base3DFusionModel):
         if self.training:
             outputs = {}
             if self.pretraining:
+                number_bbox = pooled_bbox[0].shape[0]
                 roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
                 roi_camera_feature = self.roi_align(features[1], pooled_bbox)
-                projected_lidar_feaure = self.lidar_projector(roi_lidar_feature,'lidar')
+                projected_lidar_feature = self.lidar_projector(roi_lidar_feature,'lidar')
                 projected_camera_feature = self.camera_projector(roi_camera_feature,'camera')
                 ##L2 normalize################
-                projected_lidar_feaure = F.normalize(projected_lidar_feaure, p=2, dim=1)
-                projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
+                normalized_projected_lidar_feaure = F.normalize(projected_lidar_feature, p=2, dim=1)
+                normalized_projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
-                loss = self.pretrain_loss(projected_camera_feature,projected_lidar_feaure, 10.0)
-                outputs['loss/pretrain/calico'] = loss
+                loss = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
+                outputs['loss/pretrain/calico_instance'] = loss
+
+                proj_lidar_feature = projected_lidar_feature.reshape(batch_size,number_bbox,-1)
+                pos_lidar_feature = torch.mean(proj_lidar_feature[:,:(number_bbox//2),:],dim=1)
+                neg_lidar_feature = torch.mean(proj_lidar_feature[:,(number_bbox//2):,:],dim=1)
+                lidar_feature = F.normalize(torch.cat((pos_lidar_feature,neg_lidar_feature),dim=0), p=2, dim=1)
+                proj_camera_feature = projected_camera_feature.reshape(batch_size,number_bbox,-1)
+                pos_camera_feature = torch.mean(proj_camera_feature[:,:(number_bbox//2),:],dim=1)
+                neg_camera_feature = torch.mean(proj_camera_feature[:,(number_bbox//2):,:],dim=1)
+                camera_feature = F.normalize(torch.cat((pos_camera_feature,neg_camera_feature),dim=0), p=2, dim=1)
+                loss2 = self.pretrain_loss(lidar_feature,camera_feature, 10.0)
+                outputs['loss/pretrain/calico_objectness'] = loss2
             else:
                 for type, head in self.heads.items():
                     if type == "object":
@@ -333,23 +345,20 @@ class BEVFusion(Base3DFusionModel):
         else:
             outputs = [{} for _ in range(batch_size)]
             if self.pretraining:
-                import torchvision
-                # roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
-                # roi_camera_feature = self.roi_align(features[1], pooled_bbox)
+                # import torchvision
+                # gray_scale_1 = torch.sum(features[0].squeeze(),0)
+                # gray_scale_1 = gray_scale_1 / features[0].shape[0]
+                # gray_scale_1 = ((gray_scale_1 - gray_scale_1.min()) / (gray_scale_1.max() - gray_scale_1.min()) * 255).to("cpu",torch.uint8) 
 
-                gray_scale_1 = torch.sum(features[0].squeeze(),0)
-                gray_scale_1 = gray_scale_1 / features[0].shape[0]
-                gray_scale_1 = ((gray_scale_1 - gray_scale_1.min()) / (gray_scale_1.max() - gray_scale_1.min()) * 255).to("cpu",torch.uint8) 
+                # gray_scale_2 = torch.sum(features[1].squeeze(),0)
+                # gray_scale_2 = gray_scale_2 / features[1].shape[0]
+                # gray_scale_2 = ((gray_scale_2 - gray_scale_2.min()) / (gray_scale_2.max() - gray_scale_2.min()) * 255).to("cpu",torch.uint8)
 
-                gray_scale_2 = torch.sum(features[1].squeeze(),0)
-                gray_scale_2 = gray_scale_2 / features[1].shape[0]
-                gray_scale_2 = ((gray_scale_2 - gray_scale_2.min()) / (gray_scale_2.max() - gray_scale_2.min()) * 255).to("cpu",torch.uint8)
-
-                img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
-                img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
-                # saved_image = torchvision.utils.make_grid([img1,img2], nrow=1)
-                torchvision.utils.save_image([img1,img2], '/workspace/jiachen_results/'+str(self.counter)+'.png')
-                self.counter += 1
+                # img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
+                # img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
+                # # saved_image = torchvision.utils.make_grid([img1,img2], nrow=1)
+                # torchvision.utils.save_image([img1,img2], '/workspace/jiachen_results/'+str(self.counter)+'.png')
+                # self.counter += 1
                 return outputs
             for type, head in self.heads.items():
                 if type == "object":
