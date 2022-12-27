@@ -333,23 +333,23 @@ class BEVFusion(Base3DFusionModel):
         else:
             outputs = [{} for _ in range(batch_size)]
             if self.pretraining:
-                # import torchvision
-                # # roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
-                # # roi_camera_feature = self.roi_align(features[1], pooled_bbox)
+                import torchvision
+                # roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
+                # roi_camera_feature = self.roi_align(features[1], pooled_bbox)
 
-                # gray_scale_1 = torch.sum(features[0].squeeze(),0)
-                # gray_scale_1 = gray_scale_1 / features[0].shape[0]
-                # gray_scale_1 = ((gray_scale_1 - gray_scale_1.min()) / (gray_scale_1.max() - gray_scale_1.min()) * 255).to("cpu",torch.uint8) 
+                gray_scale_1 = torch.sum(features[0].squeeze(),0)
+                gray_scale_1 = gray_scale_1 / features[0].shape[0]
+                gray_scale_1 = ((gray_scale_1 - gray_scale_1.min()) / (gray_scale_1.max() - gray_scale_1.min()) * 255).to("cpu",torch.uint8) 
 
-                # gray_scale_2 = torch.sum(features[1].squeeze(),0)
-                # gray_scale_2 = gray_scale_2 / features[1].shape[0]
-                # gray_scale_2 = ((gray_scale_2 - gray_scale_2.min()) / (gray_scale_2.max() - gray_scale_2.min()) * 255).to("cpu",torch.uint8)
+                gray_scale_2 = torch.sum(features[1].squeeze(),0)
+                gray_scale_2 = gray_scale_2 / features[1].shape[0]
+                gray_scale_2 = ((gray_scale_2 - gray_scale_2.min()) / (gray_scale_2.max() - gray_scale_2.min()) * 255).to("cpu",torch.uint8)
 
-                # img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
-                # img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
-                # # saved_image = torchvision.utils.make_grid([img1,img2], nrow=1)
-                # torchvision.utils.save_image([img1,img2], '/workspace/jiachen_results/'+str(self.counter)+'.png')
-                # self.counter += 1
+                img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
+                img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
+                # saved_image = torchvision.utils.make_grid([img1,img2], nrow=1)
+                torchvision.utils.save_image([img1,img2], '/workspace/jiachen_results/'+str(self.counter)+'.png')
+                self.counter += 1
                 return outputs
             for type, head in self.heads.items():
                 if type == "object":
