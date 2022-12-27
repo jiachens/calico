@@ -18,7 +18,7 @@ from mmdet3d.models.builder import (
 )
 from mmdet3d.ops import Voxelization, DynamicScatter
 from mmdet3d.models import FUSIONMODELS
-
+import os
 
 from .base import Base3DFusionModel
 
@@ -305,7 +305,7 @@ class BEVFusion(Base3DFusionModel):
 
         if self.training:
             self.counter = 0
-            print(self.save_dir+str(self.counter)+'.png')
+            print(os.path.join(self.save_dir,str(self.counter)+'.png'))
             outputs = {}
             if self.pretraining:
                 number_bbox = pooled_bbox[0].shape[0]
@@ -361,7 +361,7 @@ class BEVFusion(Base3DFusionModel):
                     img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
                     img2=torchvision.utils.draw_bounding_boxes(gray_scale_2.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
                     # saved_image = torchvision.utils.make_grid([img1,img2], nrow=1)
-                    torchvision.utils.save_image([img1,img2], self.save_dir+str(self.counter)+'.png')
+                    torchvision.utils.save_image([img1,img2], os.path.join(self.save_dir,str(self.counter)+'.png'))
                 self.counter += 1
                 return outputs
             for type, head in self.heads.items():
