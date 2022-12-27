@@ -305,7 +305,6 @@ class BEVFusion(Base3DFusionModel):
 
         if self.training:
             self.counter = 0
-            print(os.path.join(self.save_dir,str(self.counter)+'.png'))
             outputs = {}
             if self.pretraining:
                 number_bbox = pooled_bbox[0].shape[0]
