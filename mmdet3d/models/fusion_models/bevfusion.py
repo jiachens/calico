@@ -319,17 +319,17 @@ class BEVFusion(Base3DFusionModel):
                 loss = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
                 outputs['loss/pretrain/calico_instance'] = loss
 
-                proj_lidar_feature = projected_lidar_feature.reshape(batch_size,number_bbox,-1)
-                pos_lidar_feature = torch.mean(proj_lidar_feature[:,:(number_bbox//2),:],dim=1)
-                neg_lidar_feature = torch.mean(proj_lidar_feature[:,(number_bbox//2):,:],dim=1)
-                lidar_feature = F.normalize(torch.stack((pos_lidar_feature,neg_lidar_feature),dim=1).reshape(-1,projected_lidar_feature.shape[-1]), p=2, dim=1)
+                # proj_lidar_feature = projected_lidar_feature.reshape(batch_size,number_bbox,-1)
+                # pos_lidar_feature = torch.mean(proj_lidar_feature[:,:(number_bbox//2),:],dim=1)
+                # neg_lidar_feature = torch.mean(proj_lidar_feature[:,(number_bbox//2):,:],dim=1)
+                # lidar_feature = F.normalize(torch.stack((pos_lidar_feature,neg_lidar_feature),dim=1).reshape(-1,projected_lidar_feature.shape[-1]), p=2, dim=1)
 
-                proj_camera_feature = projected_camera_feature.reshape(batch_size,number_bbox,-1)
-                pos_camera_feature = torch.mean(proj_camera_feature[:,:(number_bbox//2),:],dim=1)
-                neg_camera_feature = torch.mean(proj_camera_feature[:,(number_bbox//2):,:],dim=1)
-                camera_feature = F.normalize(torch.stack((pos_camera_feature,neg_camera_feature),dim=1).reshape(-1,projected_camera_feature.shape[-1]), p=2, dim=1)
-                loss2 = self.pretrain_loss(lidar_feature,camera_feature, 10.0) * 5.0
-                outputs['loss/pretrain/calico_objectness'] = loss2
+                # proj_camera_feature = projected_camera_feature.reshape(batch_size,number_bbox,-1)
+                # pos_camera_feature = torch.mean(proj_camera_feature[:,:(number_bbox//2),:],dim=1)
+                # neg_camera_feature = torch.mean(proj_camera_feature[:,(number_bbox//2):,:],dim=1)
+                # camera_feature = F.normalize(torch.stack((pos_camera_feature,neg_camera_feature),dim=1).reshape(-1,projected_camera_feature.shape[-1]), p=2, dim=1)
+                # loss2 = self.pretrain_loss(lidar_feature,camera_feature, 10.0) * 5.0
+                # outputs['loss/pretrain/calico_objectness'] = loss2
             else:
                 for type, head in self.heads.items():
                     if type == "object":
@@ -348,7 +348,7 @@ class BEVFusion(Base3DFusionModel):
         else:
             outputs = [{} for _ in range(batch_size)]
             if self.pretraining:
-                if self.counter % 100 == 0:
+                if self.counter % 50 == 0:
                     import torchvision
                     gray_scale_1 = torch.sum(features[0].squeeze(),0)
                     gray_scale_1 = gray_scale_1 / features[0].shape[0]
