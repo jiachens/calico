@@ -182,12 +182,12 @@ train_pipeline:
     keys:
       - img
       - points
-      # - points_2
+      - points_2
       - gt_bboxes_3d
       - gt_labels_3d
       - gt_masks_bev
       - pooled_bbox
-      # - pooled_bbox_2
+      - pooled_bbox_2
     meta_keys:
       - camera_intrinsics
       - camera2ego
@@ -197,7 +197,7 @@ train_pipeline:
       - lidar2image
       - img_aug_matrix
       - lidar_aug_matrix
-      # - lidar_aug_matrix_2
+      - lidar_aug_matrix_2
 
 test_pipeline:
   -
