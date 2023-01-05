@@ -243,7 +243,7 @@ class BEVFusion(Base3DFusionModel):
             )
             return outputs
 
-    @auto_fp16(apply_to=("img", "points","points_2"))
+    @auto_fp16(apply_to=("img", "points", "points_2"))
     def forward_single(
         self,
         img,
@@ -279,7 +279,6 @@ class BEVFusion(Base3DFusionModel):
             self.encoders if self.training else list(self.encoders.keys())[::-1]
         ):
             if sensor == "camera":
-                print("I am here")
                 feature = self.extract_camera_features(
                     img,
                     points,
@@ -294,7 +293,6 @@ class BEVFusion(Base3DFusionModel):
                     metas,
                 )
                 if points_2 is not None:
-                    print("I am here")
                     feature_camera_2 = self.extract_camera_features(
                         img,
                         points_2,
