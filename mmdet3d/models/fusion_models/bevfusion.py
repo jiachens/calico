@@ -309,7 +309,7 @@ class BEVFusion(Base3DFusionModel):
                     feature_2.append(feature_camera_2)
 
             elif sensor == "lidar":
-                print("points_2",points_2.shape)
+                print("points",points[0].shape)
                 feature = self.extract_lidar_features(points)
                 if points_2 is not None:
                     feature_lidar_2 = self.extract_lidar_features(points_2)
