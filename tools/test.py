@@ -179,6 +179,7 @@ def main():
 
     # build the model and load checkpoint
     cfg.model.train_cfg = None
+    cfg.model['save_dir'] = args.tmpdir
     model = build_model(cfg.model, test_cfg=cfg.get("test_cfg"))
     fp16_cfg = cfg.get("fp16", None)
     if fp16_cfg is not None:
