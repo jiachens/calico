@@ -309,7 +309,7 @@ class BEVFusion(Base3DFusionModel):
                     feature_2.append(feature_camera_2)
 
             elif sensor == "lidar":
-                print("points",points[0].shape)
+                # print("points",points[0].shape)
                 feature = self.extract_lidar_features(points)
                 if points_2 is not None:
                     feature_lidar_2 = self.extract_lidar_features(points_2)
@@ -347,7 +347,7 @@ class BEVFusion(Base3DFusionModel):
                 ##############################
                 loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
                 outputs['loss/pretrain/calico_view_1_lc'] = loss1
-                
+
                 if points_2 is not None:
                     roi_lidar_feature_2 = self.roi_align(feature_2[0], pooled_bbox_2)
                     roi_camera_feature_2 = self.roi_align(feature_2[1], pooled_bbox_2)

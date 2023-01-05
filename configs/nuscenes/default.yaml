@@ -134,7 +134,7 @@ train_pipeline:
     rot_lim: ${augment3d.rotate}
     trans_lim: ${augment3d.translate}
     is_train: true
-    is_pretrain: false
+    is_pretrain: true
   -
     type: LoadBEVSegmentation
     dataset_root: ${dataset_root}
