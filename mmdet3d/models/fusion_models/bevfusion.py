@@ -309,9 +309,9 @@ class BEVFusion(Base3DFusionModel):
                         camera2lidar,
                         img_aug_matrix,
                         lidar_aug_matrix,
+                        metas,
                         points_2,
                         lidar_aug_matrix_2,
-                        metas,
                     )
                     feature_2.append(feature_camera_2)
                 else:
