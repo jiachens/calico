@@ -294,6 +294,7 @@ class BEVFusion(Base3DFusionModel):
                     metas,
                 )
                 if points_2 is not None:
+                    print("I am here")
                     feature_camera_2 = self.extract_camera_features(
                         img,
                         points_2,
