@@ -292,7 +292,7 @@ class BEVFusion(Base3DFusionModel):
                     lidar_aug_matrix,
                     metas,
                 )
-                if lidar_aug_matrix_2 is not None:
+                if points_2 is not None:
                     feature_camera_2 = self.extract_camera_features(
                         img,
                         points_2,
@@ -347,8 +347,8 @@ class BEVFusion(Base3DFusionModel):
                 loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
                 outputs['loss/pretrain/calico_view_1_lc'] = loss1
 
-                roi_lidar_feature_2 = self.roi_align(feature_2[0], pooled_bbox)
-                roi_camera_feature_2 = self.roi_align(feature_2[1], pooled_bbox)
+                roi_lidar_feature_2 = self.roi_align(feature_2[0], pooled_bbox_2)
+                roi_camera_feature_2 = self.roi_align(feature_2[1], pooled_bbox_2)
                 projected_lidar_feature_2 = self.lidar_projector(roi_lidar_feature_2,'lidar')
                 projected_camera_feature_2 = self.camera_projector(roi_camera_feature_2,'camera')
                 ##L2 normalize################

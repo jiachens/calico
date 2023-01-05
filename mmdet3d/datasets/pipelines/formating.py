@@ -52,10 +52,16 @@ class DefaultFormatBundle3D:
         if "points" in results:
             assert isinstance(results["points"], BasePoints)
             results["points"] = DC(results["points"].tensor)
+        if "points_2" in results:
+            assert isinstance(results["points_2"], BasePoints)
+            results["points_2"] = DC(results["points_2"].tensor)
         
         if "pooled_bbox" in results:
             assert isinstance(results["pooled_bbox"], BEVBox2D)
             results["pooled_bbox"] = DC(results["pooled_bbox"].tensor)
+        if "pooled_bbox_2" in results:
+            assert isinstance(results["pooled_bbox_2"], BEVBox2D)
+            results["pooled_bbox_2"] = DC(results["pooled_bbox_2"].tensor)
 
         for key in ["voxels", "coors", "voxel_centers", "num_points"]:
             if key not in results:
@@ -139,6 +145,7 @@ class Collect3D:
             "camera2ego",
             "img_aug_matrix",
             "lidar_aug_matrix",
+            "lidar_aug_matrix_2"
         ),
         meta_lis_keys=(
             "filename",
