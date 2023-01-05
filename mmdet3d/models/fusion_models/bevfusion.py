@@ -129,6 +129,8 @@ class BEVFusion(Base3DFusionModel):
         img_aug_matrix,
         lidar_aug_matrix,
         img_metas,
+        points_2 = None,
+        lidar_aug_matrix_2 = None,
     ) -> torch.Tensor:
         B, N, C, H, W = x.size()
         x = x.view(B * N, C, H, W)
@@ -142,7 +144,7 @@ class BEVFusion(Base3DFusionModel):
         BN, C, H, W = x.size()
         x = x.view(B, int(BN / B), C, H, W)
 
-        x = self.encoders["camera"]["vtransform"](
+        x1 = self.encoders["camera"]["vtransform"](
             x,
             points,
             camera2ego,
@@ -155,7 +157,23 @@ class BEVFusion(Base3DFusionModel):
             lidar_aug_matrix,
             img_metas,
         )
-        return x
+
+        if points_2 is not None and lidar_aug_matrix_2 is not None:
+            x2 = self.encoders["camera"]["vtransform"](
+                x,
+                points_2,
+                camera2ego,
+                lidar2ego,
+                lidar2camera,
+                lidar2image,
+                camera_intrinsics,
+                camera2lidar,
+                img_aug_matrix,
+                lidar_aug_matrix_2,
+                img_metas,
+            )
+            return [x1,x2]
+        return x1
 
     def extract_lidar_features(self, x) -> torch.Tensor:
         feats, coords, sizes = self.voxelize(x)
@@ -279,34 +297,37 @@ class BEVFusion(Base3DFusionModel):
             self.encoders if self.training else list(self.encoders.keys())[::-1]
         ):
             if sensor == "camera":
-                feature = self.extract_camera_features(
-                    img,
-                    points,
-                    camera2ego,
-                    lidar2ego,
-                    lidar2camera,
-                    lidar2image,
-                    camera_intrinsics,
-                    camera2lidar,
-                    img_aug_matrix,
-                    lidar_aug_matrix,
-                    metas,
-                )
-                # if points_2 is not None:
-                #     feature_camera_2 = self.extract_camera_features(
-                #         img,
-                #         points_2,
-                #         camera2ego,
-                #         lidar2ego,
-                #         lidar2camera,
-                #         lidar2image,
-                #         camera_intrinsics,
-                #         camera2lidar,
-                #         img_aug_matrix,
-                #         lidar_aug_matrix_2,
-                #         metas,
-                #     )
-                #     feature_2.append(feature_camera_2)
+                if points_2 is not None:
+                    feature, feature_camera_2 = self.extract_camera_features(
+                        img,
+                        points,
+                        camera2ego,
+                        lidar2ego,
+                        lidar2camera,
+                        lidar2image,
+                        camera_intrinsics,
+                        camera2lidar,
+                        img_aug_matrix,
+                        lidar_aug_matrix,
+                        points_2,
+                        lidar_aug_matrix_2,
+                        metas,
+                    )
+                    feature_2.append(feature_camera_2)
+                else:
+                    feature = self.extract_camera_features(
+                        img,
+                        points,
+                        camera2ego,
+                        lidar2ego,
+                        lidar2camera,
+                        lidar2image,
+                        camera_intrinsics,
+                        camera2lidar,
+                        img_aug_matrix,
+                        lidar_aug_matrix,
+                        metas,
+                    )
 
             elif sensor == "lidar":
                 feature = self.extract_lidar_features(points)
