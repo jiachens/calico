@@ -280,6 +280,7 @@ class BEVFusion(Base3DFusionModel):
         ):
             print(sensor)
             if sensor == "camera":
+                print('i am here')
                 feature = self.extract_camera_features(
                     img,
                     points,
