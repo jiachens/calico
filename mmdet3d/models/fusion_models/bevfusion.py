@@ -278,6 +278,7 @@ class BEVFusion(Base3DFusionModel):
         for sensor in (
             self.encoders if self.training else list(self.encoders.keys())[::-1]
         ):
+            print(self.encoders)
             if sensor == "camera":
                 feature = self.extract_camera_features(
                     img,
@@ -309,7 +310,6 @@ class BEVFusion(Base3DFusionModel):
                     feature_2.append(feature_camera_2)
 
             elif sensor == "lidar":
-                print("points_2",points_2[0].shape)
                 feature = self.extract_lidar_features(points)
                 if points_2 is not None:
                     feature_lidar_2 = self.extract_lidar_features(points_2)
