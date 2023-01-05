@@ -93,6 +93,14 @@ class BEVBox2D:
                 f"Unsupported translation vector of shape {trans_vector.shape}"
             )
 
+    def clone(self):
+        """Clone the BBOX.
+        """
+        original_type = type(self)
+        return original_type(
+            self.tensor.clone(),
+        )
+
     def in_range_bev(self, box_range):
         in_range_flags = (
             (self.tensor[:, 0] > box_range[0])

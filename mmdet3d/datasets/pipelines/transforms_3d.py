@@ -122,11 +122,12 @@ class ImageAug3D:
 
 @PIPELINES.register_module()
 class GlobalRotScaleTrans:
-    def __init__(self, resize_lim, rot_lim, trans_lim, is_train):
+    def __init__(self, resize_lim, rot_lim, trans_lim, is_train, is_pretrain):
         self.resize_lim = resize_lim
         self.rot_lim = rot_lim
         self.trans_lim = trans_lim
         self.is_train = is_train
+        self.is_pretrain = is_pretrain
 
     def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
         transform = np.eye(4).astype(np.float32)
@@ -137,19 +138,42 @@ class GlobalRotScaleTrans:
             translation = np.array([random.normal(0, self.trans_lim) for i in range(3)])
             rotation = np.eye(3)
 
+            if self.is_pretrain:
+                data['points_2'] = data['points'].clone()
+
             if "points" in data:
                 data["points"].rotate(-theta)
                 data["points"].translate(translation)
                 data["points"].scale(scale)
 
+                if self.is_pretrain:
+                    scale_2 = random.uniform(*self.resize_lim)
+                    theta_2 = random.uniform(*self.rot_lim)
+                    translation_2 = np.array([random.normal(0, self.trans_lim) for i in range(3)])
+                    rotation_2 = np.eye(3)
+                    data["points_2"].rotate(-theta_2)
+                    data["points_2"].translate(translation_2)
+                    data["points_2"].scale(scale_2) 
+
             if "pooled_bbox" in data:
+                if self.is_pretrain:
+                    data["pooled_bbox_2"] = data["pooled_bbox"].clone()
                 pooled_bbox = data["pooled_bbox"]
                 pooled_bbox.rotate(theta)
                 pooled_bbox.translate(translation)
                 pooled_bbox.scale(scale)
                 data["pooled_bbox"] = pooled_bbox
 
+                if self.is_pretrain:
+                    pooled_bbox_2 = data["pooled_bbox_2"]
+                    pooled_bbox_2.rotate(theta_2)
+                    pooled_bbox_2.translate(translation_2)
+                    pooled_bbox_2.scale(scale_2)
+                    data["pooled_bbox_2"] = pooled_bbox_2
+
             gt_boxes = data["gt_bboxes_3d"]
+            if self.is_pretrain:
+                gt_boxes_2 = data["gt_bboxes_3d"].clone()
             rotation = rotation @ gt_boxes.rotate(theta).numpy()
             gt_boxes.translate(translation)
             gt_boxes.scale(scale)
@@ -159,6 +183,13 @@ class GlobalRotScaleTrans:
             transform[:3, 3] = translation * scale
 
         data["lidar_aug_matrix"] = transform
+        if self.is_pretrain:
+            transform_2 = np.eye(4).astype(np.float32)
+            rotation_2 = rotation_2 @ gt_boxes_2.rotate(theta_2).numpy()
+            transform_2[:3, :3] = rotation_2.T * scale_2
+            transform_2[:3, 3] = translation_2 * scale_2
+            data["lidar_aug_matrix_2"] = transform_2
+
         return data
 
 
@@ -280,6 +311,26 @@ class RandomFlip3D:
                 data["pooled_bbox"].flip("vertical")
 
         data["lidar_aug_matrix"][:3, :] = rotation @ data["lidar_aug_matrix"][:3, :]
+
+        
+        if "points_2" in data:
+            flip_horizontal = random.choice([0, 1])
+            flip_vertical = random.choice([0, 1])
+
+            rotation_2 = np.eye(3)
+            if flip_horizontal:
+                rotation_2 = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]]) @ rotation_2
+                data["points"].flip("horizontal")
+                data["pooled_bbox_2"].flip("horizontal")
+
+            if flip_vertical:
+                rotation_2 = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]]) @ rotation_2
+                data["points"].flip("vertical")
+                data["pooled_bbox_2"].flip("vertical")
+
+            data["lidar_aug_matrix_2"][:3, :] = rotation_2 @ data["lidar_aug_matrix_2"][:3, :]
+
+
         return data
 
 
@@ -517,47 +568,62 @@ class BBoxTransformer:
         self.num_bbox = num_bbox
         self.bev_range = bev_range
 
-    def _generate_bbox(self, num_bbox, bev_range):
-        """
-        Private function to generate random pooled bbox.
-        """
-        h = np.random.uniform(0.5, 5, num_bbox) # empirically chosen height
-        w = np.random.uniform(0.5, 5, num_bbox)
-        x1 = np.random.uniform(bev_range[0], bev_range[2]-5, num_bbox)
-        y1 = np.random.uniform(bev_range[1], bev_range[3]-5, num_bbox)
-        x2 = x1 + w
-        y2 = y1 + h
-        bbox = np.stack([x1, y1, x2, y2], axis=1)
-        device = torch.device("cpu")
-        bbox = torch.as_tensor(bbox,dtype=torch.float32, device=device)
-        return bbox.view(-1,4)
+    # def _generate_bbox(self, num_bbox, bev_range):
+    #     """
+    #     Private function to generate random pooled bbox.
+    #     """
+    #     h = np.random.uniform(0.5, 5, num_bbox) # empirically chosen height
+    #     w = np.random.uniform(0.5, 5, num_bbox)
+    #     x1 = np.random.uniform(bev_range[0], bev_range[2]-5, num_bbox)
+    #     y1 = np.random.uniform(bev_range[1], bev_range[3]-5, num_bbox)
+    #     x2 = x1 + w
+    #     y2 = y1 + h
+    #     bbox = np.stack([x1, y1, x2, y2], axis=1)
+    #     device = torch.device("cpu")
+    #     bbox = torch.as_tensor(bbox,dtype=torch.float32, device=device)
+    #     return bbox.view(-1,4)
 
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
+        if 'pooled_bbox_2' in data:
+            pooled_bbox_2 = data['pooled_bbox_2']
         mask = pooled_bbox.in_range_bev(self.bev_range)
+        if 'pooled_bbox_2' in data:
+            mask_2 = pooled_bbox_2.in_range_bev(self.bev_range)
+            mask = mask & mask_2
+            pooled_bbox_2 = pooled_bbox_2[mask]
         pooled_bbox = pooled_bbox[mask]
 
         if self.num_bbox > pooled_bbox.tensor.shape[0]:
-            random_bbox = self._generate_bbox(self.num_bbox-pooled_bbox.tensor.shape[0], self.bev_range)
-            pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
-            # raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0], will support this soon.")
+            # random_bbox = self._generate_bbox(self.num_bbox-pooled_bbox.tensor.shape[0], self.bev_range)
+            # pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
+            raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0]")
         else:
-            pooled_bbox.shuffle()
-            pooled_bbox = pooled_bbox[0:self.num_bbox]
+            # pooled_bbox.shuffle()
+            idx = torch.randperm(pooled_bbox.tensor.shape[0])[:self.num_bbox]
+            pooled_bbox = pooled_bbox[idx]
+            if 'pooled_bbox_2' in data:
+                pooled_bbox_2 = pooled_bbox_2[idx]
         
-        negative_bbox = self._generate_bbox(self.num_bbox, self.bev_range)
-        pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, negative_bbox], dim=0)
 
         ####FIXME: this is a hack to make the bbox in the right format
         pooled_bbox.rotate(0.5*np.pi)
         pooled_bbox.flip('horizontal')
+        if 'pooled_bbox_2' in data:
+            pooled_bbox_2.rotate(0.5*np.pi)
+            pooled_bbox_2.flip('horizontal')
         ##############################################################
 
         pooled_bbox.tensor[:,0::2] = (pooled_bbox.tensor[:,0::2] - self.bev_range[0]) / self.voxel_size[0]
         pooled_bbox.tensor[:,1::2] = (pooled_bbox.tensor[:,1::2] - self.bev_range[1]) / self.voxel_size[1]
-        
         data['pooled_bbox'] = pooled_bbox
+
+        if 'pooled_bbox_2' in data:
+            pooled_bbox_2.tensor[:,0::2] = (pooled_bbox_2.tensor[:,0::2] - self.bev_range[0]) / self.voxel_size[0]
+            pooled_bbox_2.tensor[:,1::2] = (pooled_bbox_2.tensor[:,1::2] - self.bev_range[1]) / self.voxel_size[1]
+            data['pooled_bbox_2'] = pooled_bbox_2
+            
         return data
 
 

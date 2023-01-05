@@ -12,6 +12,7 @@ from mmdet3d.core.points import BasePoints, get_points_type
 from mmdet3d.core.bbox import BEVBox2D
 from mmdet.datasets.builder import PIPELINES
 from mmdet.datasets.pipelines import LoadAnnotations
+import torch
 
 from .loading_utils import load_augmented_point_cloud, reduce_LiDAR_beams
 
@@ -316,8 +317,11 @@ class LoadPooledBBox:
     or 
     Generate pooled bbox randomly
     '''
-    def __init__(self, method='semantic'):
+    def __init__(self, num_bbox=50, method='semantic', bev_range=[-54., -54., 54., 54.]):
         self.method = method
+        self.num_bbox = num_bbox
+        self.bev_range = bev_range
+
     def _load_bbox(self, bbox_path):
         """Private function to load semantic pooled bbox.
         Args:
@@ -332,22 +336,20 @@ class LoadPooledBBox:
             objects = np.fromfile(bbox_path, dtype=np.float32)
         return objects
     
-    def _generate_bbox(self):
+    def _generate_bbox(self,num_bbox):
         """
         Private function to generate random pooled bbox.
         """
-        NUM_BBOX = 50
-        RANGE_LIDAR = 54.0
-        #FIXME: this is a hack to make sure the bbox is not too close to the edge
-        left_bottom_corner = np.random.uniform(-RANGE_LIDAR, RANGE_LIDAR-5, (NUM_BBOX,2))
-        h = np.random.uniform(0.5, 5, NUM_BBOX) # empirically chosen height
-        w = np.random.uniform(0.5, 5, NUM_BBOX)
-        x1 = left_bottom_corner[:,0]
-        y1 = left_bottom_corner[:,1]
+        h = np.random.uniform(0.5, 5, self.num_bbox) # empirically chosen height
+        w = np.random.uniform(0.5, 5, self.num_bbox)
+        x1 = np.random.uniform(self.bev_range[0], self.bev_range[2]-5, self.num_bbox)
+        y1 = np.random.uniform(self.bev_range[1], self.bev_range[3]-5, self.num_bbox)
         x2 = x1 + w
         y2 = y1 + h
-        bbox = np.concatenate([x1, y1, x2, y2], axis=1)
-        return bbox
+        bbox = np.stack([x1, y1, x2, y2], axis=1)
+        device = torch.device("cpu")
+        bbox = torch.as_tensor(bbox,dtype=torch.float32, device=device)
+        return bbox.view(-1,4)
 
     def __call__(self, results):
         if self.method == "semantic":
@@ -357,6 +359,9 @@ class LoadPooledBBox:
             bbox_path = bbox_path.replace("pcd.bin", "npy")
             bbox = self._load_bbox(bbox_path)
             bbox = BEVBox2D(bbox)
+            if self.num_bbox > bbox.tensor.shape[0]:
+                random_bbox = self._generate_bbox(self.num_bbox-bbox.tensor.shape[0])
+                bbox.tensor = torch.cat([bbox.tensor, random_bbox], dim=0)
             results['pooled_bbox'] = bbox
         elif self.method == 'random':
             bbox = BEVBox2D(self._generate_bbox())
