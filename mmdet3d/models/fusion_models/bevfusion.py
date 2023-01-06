@@ -371,7 +371,6 @@ class BEVFusion(Base3DFusionModel):
                 loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
                 outputs['loss/pretrain/calico_view_1_lc'] = loss1
                 if points_2 is not None:
-                    print(pooled_bbox_2)
                     roi_lidar_feature_2 = self.roi_align(features_2[1], pooled_bbox_2)
                     roi_camera_feature_2 = self.roi_align(features_2[0], pooled_bbox_2)
                     projected_lidar_feature_2 = self.lidar_projector(roi_lidar_feature_2,'lidar')
