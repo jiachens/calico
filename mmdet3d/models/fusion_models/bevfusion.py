@@ -356,9 +356,9 @@ class BEVFusion(Base3DFusionModel):
             self.counter = 0
             outputs = {}
             if self.pretraining:
-                # number_bbox = pooled_bbox[0].shape[0]
-                roi_lidar_feature = self.roi_align(features[0], pooled_bbox)
-                roi_camera_feature = self.roi_align(features[1], pooled_bbox)
+                print('I am in pretraining')
+                roi_lidar_feature = self.roi_align(features[1], pooled_bbox)
+                roi_camera_feature = self.roi_align(features[0], pooled_bbox)
                 projected_lidar_feature = self.lidar_projector(roi_lidar_feature,'lidar')
                 projected_camera_feature = self.camera_projector(roi_camera_feature,'camera')
                 ##L2 normalize################
@@ -369,8 +369,8 @@ class BEVFusion(Base3DFusionModel):
                 outputs['loss/pretrain/calico_view_1_lc'] = loss1
                 print(points_2[0].shape)
                 if points_2 is not None:
-                    roi_lidar_feature_2 = self.roi_align(feature_2[0], pooled_bbox_2)
-                    roi_camera_feature_2 = self.roi_align(feature_2[1], pooled_bbox_2)
+                    roi_lidar_feature_2 = self.roi_align(feature_2[1], pooled_bbox_2)
+                    roi_camera_feature_2 = self.roi_align(feature_2[0], pooled_bbox_2)
                     projected_lidar_feature_2 = self.lidar_projector(roi_lidar_feature_2,'lidar')
                     projected_camera_feature_2 = self.camera_projector(roi_camera_feature_2,'camera')
                     ##L2 normalize################

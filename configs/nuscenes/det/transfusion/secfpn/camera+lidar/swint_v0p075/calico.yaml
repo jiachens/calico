@@ -4,12 +4,12 @@ model:
   calico:
     lidar_projector:
       type: CNNProjector
-      channels: [80, 128, 64]
+      channels: [256, 128, 64]
       kernel_size: 3
       stride: 1
     camera_projector:
       type: CNNProjector    
-      channels: [256, 128, 64]
+      channels: [80, 128, 64]
       kernel_size: 3
       stride: 1
 
