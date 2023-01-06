@@ -77,7 +77,6 @@ class Base3DFusionModel(BaseModule, metaclass=ABCMeta):
         """
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
-        print(log_vars)
 
         outputs = dict(loss=loss, log_vars=log_vars, num_samples=len(data["metas"]))
 

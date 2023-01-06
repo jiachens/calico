@@ -600,7 +600,6 @@ class BBoxTransformer:
             # pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
             raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0]")
         else:
-            # pooled_bbox.shuffle()
             idx = torch.randperm(pooled_bbox.tensor.shape[0])[:self.num_bbox]
             pooled_bbox = pooled_bbox[idx]
             if 'pooled_bbox_2' in data:
