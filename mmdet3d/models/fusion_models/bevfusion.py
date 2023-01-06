@@ -285,8 +285,6 @@ class BEVFusion(Base3DFusionModel):
         gt_labels_3d=None,
         **kwargs,
     ):  
-        print(points_2[0].shape)
-        print(pooled_bbox_2[0].shape)
         # ##### TEST CORRECTNESS ### TODO: remove me later
         # from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
         # pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.075 - 54.0
