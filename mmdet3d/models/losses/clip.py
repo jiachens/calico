@@ -13,7 +13,6 @@ except ImportError:
 
 try:
     import horovod.torch as hvd
-    hvd.init()
 except ImportError:
     hvd = None
 
