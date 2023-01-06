@@ -380,10 +380,10 @@ class BEVFusion(Base3DFusionModel):
 
                     ### cross view loss ####
                     loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_cc'] = loss3
+                    outputs['loss/pretrain/calico_view_12_c'] = loss3
 
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_ll'] = loss4
+                    outputs['loss/pretrain/calico_view_12_l'] = loss4
             else:
                 for type, head in self.heads.items():
                     if type == "object":
