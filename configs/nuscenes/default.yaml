@@ -213,7 +213,7 @@ test_pipeline:
   -
     type: LoadPooledBBox
     method: semantic
-    num_bbox: 50
+    num_bbox: -1
     bev_range: [-54., -54., 54., 54.]
   -
     type: LoadPointsFromMultiSweeps
@@ -264,7 +264,7 @@ test_pipeline:
   -
     type: BBoxTransformer
     voxel_size: [0.075,0.075]
-    num_bbox: 50
+    num_bbox: -1
     bev_range: [-54., -54., 54., 54.]
   -
     type: ImageNormalize
@@ -278,10 +278,12 @@ test_pipeline:
     keys:
       - img
       - points
+      - points_2
       - gt_bboxes_3d
       - gt_labels_3d
       - gt_masks_bev
       - pooled_bbox
+      - pooled_bbox_@
     meta_keys:
       - camera_intrinsics
       - camera2ego
@@ -291,6 +293,7 @@ test_pipeline:
       - lidar2image
       - img_aug_matrix
       - lidar_aug_matrix
+      - lidar_aug_matrix_2
 
 data:
   samples_per_gpu: 4

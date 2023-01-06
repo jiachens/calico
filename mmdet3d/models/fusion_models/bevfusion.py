@@ -357,30 +357,37 @@ class BEVFusion(Base3DFusionModel):
                 projected_lidar_feature = self.lidar_projector(roi_lidar_feature,'lidar')
                 projected_camera_feature = self.camera_projector(roi_camera_feature,'camera')
                 ##L2 normalize################
-                normalized_projected_lidar_feaure = F.normalize(projected_lidar_feature, p=2, dim=1)
+                normalized_projected_lidar_feature = F.normalize(projected_lidar_feature, p=2, dim=1)
                 normalized_projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
 
-                loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
-                outputs['loss/pretrain/calico_view_1_lc'] = loss1
+                loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature, 10.0)
+                outputs['loss/pretrain/calico_v1l_v1c'] = loss1
+
                 if points_2 is not None:
                     roi_lidar_feature_2 = self.roi_align(features_2[1], pooled_bbox_2)
                     roi_camera_feature_2 = self.roi_align(features_2[0], pooled_bbox_2)
                     projected_lidar_feature_2 = self.lidar_projector(roi_lidar_feature_2,'lidar')
                     projected_camera_feature_2 = self.camera_projector(roi_camera_feature_2,'camera')
                     ##L2 normalize################
-                    normalized_projected_lidar_feaure_2 = F.normalize(projected_lidar_feature_2, p=2, dim=1)
+                    normalized_projected_lidar_feature_2 = F.normalize(projected_lidar_feature_2, p=2, dim=1)
                     normalized_projected_camera_feature_2 = F.normalize(projected_camera_feature_2, p=2, dim=1)
                     ##############################
-                    loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain/calico_view_2_lc'] = loss2
+                    loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature_2, 10.0)
+                    outputs['loss/pretrain/calico_v2l_v2c'] = loss2
 
                     ### cross view loss ####
                     loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_cc'] = loss3
+                    outputs['loss/pretrain/calico_v1c_v2c'] = loss3
+                    loss4 = self.pretrain_loss(normalized_projected_lidar_feature,normalized_projected_lidar_feature_2, 10.0)
+                    outputs['loss/pretrain/calico_v1l_v2l'] = loss4
 
-                    loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_ll'] = loss4
+                    ### cross view-modal loss ####
+                    loss5 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature_2, 10.0)
+                    outputs['loss/pretrain/calico_v1c_v2l'] = loss5
+                    loss6 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature, 10.0)
+                    outputs['loss/pretrain/calico_v2c_v1l'] = loss6
+                    
             else:
                 for type, head in self.heads.items():
                     if type == "object":
@@ -401,12 +408,12 @@ class BEVFusion(Base3DFusionModel):
             if self.pretraining:
                 if self.counter % 50 == 0:
                     import torchvision
-                    gray_scale_1 = torch.sum(features[0].squeeze(),0)
-                    gray_scale_1 = gray_scale_1 / features[0].shape[0]
+                    gray_scale_1 = torch.sum(features_2[0].squeeze(),0)
+                    gray_scale_1 = gray_scale_1 / features_2[0].shape[0]
                     gray_scale_1 = ((gray_scale_1 - gray_scale_1.min()) / (gray_scale_1.max() - gray_scale_1.min()) * 255).to("cpu",torch.uint8) 
 
-                    gray_scale_2 = torch.sum(features[1].squeeze(),0)
-                    gray_scale_2 = gray_scale_2 / features[1].shape[0]
+                    gray_scale_2 = torch.sum(features_2[1].squeeze(),0)
+                    gray_scale_2 = gray_scale_2 / features_2[1].shape[0]
                     gray_scale_2 = ((gray_scale_2 - gray_scale_2.min()) / (gray_scale_2.max() - gray_scale_2.min()) * 255).to("cpu",torch.uint8)
 
                     img1=torchvision.utils.draw_bounding_boxes(gray_scale_1.unsqueeze(0),pooled_bbox[0]//8,colors="red") / 255.#.numpy()
