@@ -51,6 +51,7 @@ def gather_features(
         # We gather tensors from all gpus
         if gather_with_grad:
             all_image_features = torch.cat(torch.distributed.nn.all_gather(image_features), dim=0)
+            print(all_image_features)
             all_text_features = torch.cat(torch.distributed.nn.all_gather(text_features), dim=0)
         else:
             gathered_image_features = [torch.zeros_like(image_features) for _ in range(world_size)]
