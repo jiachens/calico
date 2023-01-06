@@ -385,6 +385,7 @@ class BEVFusion(Base3DFusionModel):
 
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
                     outputs['loss/pretrain/calico_view_12_ll'] = loss4
+                print('i am here')
 
             else:
                 for type, head in self.heads.items():
