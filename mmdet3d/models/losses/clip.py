@@ -122,15 +122,15 @@ class ClipLoss(nn.Module):
             logits_per_image = logit_scale * image_features @ text_features.T
             logits_per_text = logit_scale * text_features @ image_features.T
 
-        elif self.world_size > 1:
+        else:
             all_image_features, all_text_features = gather_features(
                 image_features, text_features, self.use_horovod)
             logits_per_image = logit_scale * all_image_features @ all_text_features.T
             logits_per_text = logits_per_image.T
 
-        else: ## default
-            logits_per_image = logit_scale * image_features @ text_features.T
-            logits_per_text = logit_scale * text_features @ image_features.T
+        # else: ## default
+        #     logits_per_image = logit_scale * image_features @ text_features.T
+        #     logits_per_text = logit_scale * text_features @ image_features.T
 
         # calculated ground-truth and cache if enabled
         if self.batch_loss:
