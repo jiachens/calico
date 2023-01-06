@@ -68,16 +68,12 @@ def all_gather(data):
     for size, tensor in zip(size_list, tensor_list):
         buffer = tensor.cpu().numpy().tobytes()[:size]
         data_list.append(pickle.loads(buffer))
-
+    print(data_list)
     return data_list
 
 def gather_features(
         image_features,
         text_features,
-        # local_loss=False,
-        # gather_with_grad=False,
-        # rank=0,
-        # world_size=1,
         use_horovod=False
 ):
     assert has_distributed, 'torch.distributed did not import correctly, please use a PyTorch version with support.'
