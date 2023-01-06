@@ -81,7 +81,7 @@ class BEVFusion(Base3DFusionModel):
             calico["loss"]["cache_labels"] = False
             calico["loss"]["rank"] = dist.rank()
             calico["loss"]["world_size"] = dist.size()
-            # calico["loss"]["use_horovod"] = True
+            calico["loss"]["use_horovod"] = True
             self.pretrain_loss = build_loss(calico["loss"])
         else:
             self.pretraining = False
