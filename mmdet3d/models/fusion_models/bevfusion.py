@@ -81,6 +81,7 @@ class BEVFusion(Base3DFusionModel):
             calico["loss"]["cache_labels"] = False
             calico["loss"]["rank"] = dist.rank()
             calico["loss"]["world_size"] = dist.size()
+            calico["loss"]["use_horovod"] = True
             self.pretrain_loss = build_loss(calico["loss"])
         else:
             self.pretraining = False
@@ -365,7 +366,7 @@ class BEVFusion(Base3DFusionModel):
                 normalized_projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
                 loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
-                # outputs['loss/pretrain/calico_view_1_lc'] = loss1
+                outputs['loss/pretrain/calico_view_1_lc'] = loss1
                 if points_2 is not None:
                     roi_lidar_feature_2 = self.roi_align(features_2[1], pooled_bbox_2)
                     roi_camera_feature_2 = self.roi_align(features_2[0], pooled_bbox_2)
@@ -376,13 +377,14 @@ class BEVFusion(Base3DFusionModel):
                     normalized_projected_camera_feature_2 = F.normalize(projected_camera_feature_2, p=2, dim=1)
                     ##############################
                     loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feaure_2, 10.0)
-                    # outputs['loss/pretrain/calico_view_2_lc'] = loss2
+                    outputs['loss/pretrain/calico_view_2_lc'] = loss2
 
                     ### cross view loss ####
                     loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    # outputs['loss/pretrain/calico_view_12_c'] = loss3
+                    outputs['loss/pretrain/calico_view_12_cc'] = loss3
+
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_l'] = loss1 + loss2 + loss3 + loss4
+                    outputs['loss/pretrain/calico_view_12_ll'] = loss4
             else:
                 for type, head in self.heads.items():
                     if type == "object":
