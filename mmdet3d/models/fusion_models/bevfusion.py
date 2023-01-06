@@ -284,6 +284,7 @@ class BEVFusion(Base3DFusionModel):
         gt_labels_3d=None,
         **kwargs,
     ):  
+        print(points_2[0].shape)
         # ##### TEST CORRECTNESS ### TODO: remove me later
         # from calico_tools.visualize.general import draw_pointcloud_polygon_matplotlib
         # pooled_bbox[0][:,0::2] = pooled_bbox[0][:,0::2] * 0.075 - 54.0
@@ -356,7 +357,6 @@ class BEVFusion(Base3DFusionModel):
             self.counter = 0
             outputs = {}
             if self.pretraining:
-                print('I am in pretraining')
                 roi_lidar_feature = self.roi_align(features[1], pooled_bbox)
                 roi_camera_feature = self.roi_align(features[0], pooled_bbox)
                 projected_lidar_feature = self.lidar_projector(roi_lidar_feature,'lidar')
@@ -366,8 +366,7 @@ class BEVFusion(Base3DFusionModel):
                 normalized_projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
                 loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
-                outputs['loss/pretrain1/calico_view_1_lc'] = loss1
-                print(points_2[0].shape)
+                outputs['loss/pretrain/calico_view_1_lc'] = loss1
                 if points_2 is not None:
                     roi_lidar_feature_2 = self.roi_align(features_2[1], pooled_bbox_2)
                     roi_camera_feature_2 = self.roi_align(features_2[0], pooled_bbox_2)
@@ -378,14 +377,14 @@ class BEVFusion(Base3DFusionModel):
                     normalized_projected_camera_feature_2 = F.normalize(projected_camera_feature_2, p=2, dim=1)
                     ##############################
                     loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain2/calico_view_2_lc'] = loss2
+                    outputs['loss/pretrain/calico_view_2_lc'] = loss2
 
                     ### cross view loss ####
                     loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    outputs['loss/pretrain3/calico_view_12_cc'] = loss3
+                    outputs['loss/pretrain/calico_view_12_cc'] = loss3
 
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain4/calico_view_12_ll'] = loss4
+                    outputs['loss/pretrain/calico_view_12_ll'] = loss4
             else:
                 for type, head in self.heads.items():
                     if type == "object":
