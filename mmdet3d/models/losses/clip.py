@@ -87,8 +87,8 @@ def gather_features(
         all_text_features = hvd.allgather(text_features)
 
     else:#torch.distributed.nn.
-        all_image_features = torch.cat(all_gather(image_features), dim=0)
-        all_text_features = torch.cat(all_gather(text_features), dim=0)
+        all_image_features = torch.cat(torch.distributed.nn.all_gather(image_features), dim=0)
+        all_text_features = torch.cat(torch.distributed.nn.all_gather(text_features), dim=0)
 
     return all_image_features, all_text_features
 
@@ -106,8 +106,8 @@ class ClipLoss(nn.Module):
         self.use_horovod = use_horovod
         self.batch_loss, self.batch_size = batch_loss[0], batch_loss[1]
         # cache state
-        self.prev_num_logits = 0
-        self.labels = {}
+        # self.prev_num_logits = 0
+        # self.labels = {}
 
     def forward(self, image_features, text_features, logit_scale):
         device = image_features.device
@@ -128,11 +128,6 @@ class ClipLoss(nn.Module):
             logits_per_image = logit_scale * all_image_features @ all_text_features.T
             logits_per_text = logits_per_image.T
 
-        # else: ## default
-        #     logits_per_image = logit_scale * image_features @ text_features.T
-        #     logits_per_text = logit_scale * text_features @ image_features.T
-
-        # calculated ground-truth and cache if enabled
         if self.batch_loss:
             total_loss = 0
             num_logits = logits_image.shape[1]
