@@ -292,13 +292,13 @@ class BEVFusion(Base3DFusionModel):
         # self.counter += 1
         # #####################
         features = []
-        feature_2 = []
+        features_2 = []
         for sensor in (
             self.encoders if self.training else list(self.encoders.keys())[::-1]
         ):
             if sensor == "camera":
                 if points_2 is not None:
-                    feature, feature_camera_2 = self.extract_camera_features(
+                    feature, feature_2 = self.extract_camera_features(
                         img,
                         points,
                         camera2ego,
@@ -313,7 +313,7 @@ class BEVFusion(Base3DFusionModel):
                         points_2,
                         lidar_aug_matrix_2,
                     )
-                    feature_2.append(feature_camera_2)
+                    features_2.append(feature_2)
                 else:
                     feature = self.extract_camera_features(
                         img,
@@ -332,8 +332,8 @@ class BEVFusion(Base3DFusionModel):
             elif sensor == "lidar":
                 feature = self.extract_lidar_features(points)
                 if points_2 is not None:
-                    feature_lidar_2 = self.extract_lidar_features(points_2)
-                    feature_2.append(feature_lidar_2)
+                    feature_2 = self.extract_lidar_features(points_2)
+                    features_2.append(feature_2)
             else:
                 raise ValueError(f"unsupported sensor: {sensor}")
             features.append(feature)
@@ -366,11 +366,11 @@ class BEVFusion(Base3DFusionModel):
                 normalized_projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
                 loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feaure, 10.0)
-                outputs['loss/pretrain/calico_view_1_lc'] = loss1
+                outputs['loss/pretrain1/calico_view_1_lc'] = loss1
                 print(points_2[0].shape)
                 if points_2 is not None:
-                    roi_lidar_feature_2 = self.roi_align(feature_2[1], pooled_bbox_2)
-                    roi_camera_feature_2 = self.roi_align(feature_2[0], pooled_bbox_2)
+                    roi_lidar_feature_2 = self.roi_align(features_2[1], pooled_bbox_2)
+                    roi_camera_feature_2 = self.roi_align(features_2[0], pooled_bbox_2)
                     projected_lidar_feature_2 = self.lidar_projector(roi_lidar_feature_2,'lidar')
                     projected_camera_feature_2 = self.camera_projector(roi_camera_feature_2,'camera')
                     ##L2 normalize################
@@ -378,13 +378,14 @@ class BEVFusion(Base3DFusionModel):
                     normalized_projected_camera_feature_2 = F.normalize(projected_camera_feature_2, p=2, dim=1)
                     ##############################
                     loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain/calico_view_2_lc'] = loss2
+                    outputs['loss/pretrain2/calico_view_2_lc'] = loss2
 
+                    ### cross view loss ####
                     loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_cc'] = loss3
+                    outputs['loss/pretrain3/calico_view_12_cc'] = loss3
 
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
-                    outputs['loss/pretrain/calico_view_12_ll'] = loss4
+                    outputs['loss/pretrain4/calico_view_12_ll'] = loss4
             else:
                 for type, head in self.heads.items():
                     if type == "object":
