@@ -11,11 +11,11 @@ try:
 except ImportError:
     has_distributed = False
 
-# try:
-#     import horovod.torch as hvd
-#     hvd.init()
-# except ImportError:
-#     hvd = None
+try:
+    import horovod.torch as hvd
+    hvd.init()
+except ImportError:
+    hvd = None
 
 '''
 steal from existing open clip implementation
