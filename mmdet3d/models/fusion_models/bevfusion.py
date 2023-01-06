@@ -383,11 +383,11 @@ class BEVFusion(Base3DFusionModel):
                     outputs['loss/pretrain/calico_v1l_v2l'] = loss4
 
                     ### cross view-modal loss ####
-                    loss5 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_v1c_v2l'] = loss5
-                    loss6 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature, 10.0)
-                    outputs['loss/pretrain/calico_v2c_v1l'] = loss6
-                    
+                    # loss5 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature_2, 10.0)
+                    # outputs['loss/pretrain/calico_v1c_v2l'] = loss5
+                    # loss6 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature, 10.0)
+                    # outputs['loss/pretrain/calico_v2c_v1l'] = loss6
+
             else:
                 for type, head in self.heads.items():
                     if type == "object":
