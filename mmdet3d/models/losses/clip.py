@@ -28,37 +28,6 @@ def get_world_size():
         return 1
     return dist2.get_world_size()
 
-# def all_gather(q, ws, device):
-#     """
-#     Gathers tensor arrays of different lengths across multiple gpus
-    
-#     Parameters
-#     ----------
-#         q : tensor array
-#         ws : world size
-#         device : current gpu device
-        
-#     Returns
-#     -------
-#         all_q : list of gathered tensor arrays from all the gpus
-
-#     """
-#     local_size = torch.tensor(q.size(), device=device)
-#     all_sizes = [torch.zeros_like(local_size) for _ in range(ws)]
-#     dist2.all_gather(all_sizes, local_size)
-#     max_size = max(all_sizes)
-
-#     size_diff = max_size.item() - local_size.item()
-#     if size_diff:
-#         padding = torch.zeros(size_diff, device=device, dtype=q.dtype)
-#         q = torch.cat((q, padding))
-
-#     all_qs_padded = [torch.zeros_like(q) for _ in range(ws)]
-#     dist2.all_gather(all_qs_padded, q)
-#     all_qs = []
-#     for q, size in zip(all_qs_padded, all_sizes):
-#         all_qs.append(q[:size])
-#     return all_qs
 
 def all_gather(data):
     """
@@ -98,7 +67,7 @@ def all_gather(data):
     data_list = []
     for size, tensor in zip(size_list, tensor_list):
         buffer = tensor.cpu().numpy().tobytes()[:size]
-        data_list.append(pickle.loads(buffer).to(torch.cuda.current_device()))
+        data_list.append(pickle.loads(buffer))
     print(data_list)
     return data_list
 
