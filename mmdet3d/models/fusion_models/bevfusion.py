@@ -385,15 +385,15 @@ class BEVFusion(Base3DFusionModel):
                     # normalized_projected_lidar_feaure_2 = torch.cat(torch.distributed.nn.all_gather(normalized_projected_lidar_feaure_2), dim=0)
                     # normalized_projected_camera_feature_2 = torch.cat(torch.distributed.nn.all_gather(normalized_projected_camera_feature_2), dim=0)
                     ##############################
-                    # loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feaure_2, 10.0)
-                    # outputs['loss/pretrain/calico_view_2_lc'] = loss2
+                    loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feaure_2, 10.0)
+                    outputs['loss/pretrain/calico_view_2_lc'] = loss2
 
                     ### cross view loss ####
-                    # loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    # outputs['loss/pretrain/calico_view_12_cc'] = loss3
+                    loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
+                    outputs['loss/pretrain/calico_view_12_cc'] = loss3
 
-                    # loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
-                    # outputs['loss/pretrain/calico_view_12_ll'] = loss4
+                    loss4 = self.pretrain_loss(normalized_projected_lidar_feaure,normalized_projected_lidar_feaure_2, 10.0)
+                    outputs['loss/pretrain/calico_view_12_ll'] = loss4
             else:
                 for type, head in self.heads.items():
                     if type == "object":
