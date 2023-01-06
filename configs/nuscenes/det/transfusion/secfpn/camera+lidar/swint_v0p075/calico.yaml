@@ -16,7 +16,7 @@ model:
     loss:
       type: ClipLoss
       # batch_loss: [True,4]
-      # local_loss: True
+      local_loss: True
       
     roi_align:
       spatial_scale: 0.125
