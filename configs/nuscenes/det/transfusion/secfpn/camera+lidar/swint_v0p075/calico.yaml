@@ -24,7 +24,7 @@ model:
       sampling_ratio: 2
 
 data:
-  samples_per_gpu: 2
+  samples_per_gpu: 1
   # train:
   #     dataset:
   #       ann_file: ${dataset_root + "nuscenes_infos_train_0.05.pkl"}
