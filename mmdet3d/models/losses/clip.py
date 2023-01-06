@@ -87,8 +87,8 @@ def gather_features(
         all_text_features = hvd.allgather(text_features)
 
     else:#torch.distributed.nn.
-        all_image_features = torch.cat(torch.distributed.nn.all_gather(image_features), dim=0)
-        all_text_features = torch.cat(torch.distributed.nn.all_gather(text_features), dim=0)
+        all_image_features = torch.cat(all_gather(image_features), dim=0)
+        all_text_features = torch.cat(all_gather(text_features), dim=0)
 
     return all_image_features, all_text_features
 
