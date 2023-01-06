@@ -568,21 +568,6 @@ class BBoxTransformer:
         self.num_bbox = num_bbox
         self.bev_range = bev_range
 
-    # def _generate_bbox(self, num_bbox, bev_range):
-    #     """
-    #     Private function to generate random pooled bbox.
-    #     """
-    #     h = np.random.uniform(0.5, 5, num_bbox) # empirically chosen height
-    #     w = np.random.uniform(0.5, 5, num_bbox)
-    #     x1 = np.random.uniform(bev_range[0], bev_range[2]-5, num_bbox)
-    #     y1 = np.random.uniform(bev_range[1], bev_range[3]-5, num_bbox)
-    #     x2 = x1 + w
-    #     y2 = y1 + h
-    #     bbox = np.stack([x1, y1, x2, y2], axis=1)
-    #     device = torch.device("cpu")
-    #     bbox = torch.as_tensor(bbox,dtype=torch.float32, device=device)
-    #     return bbox.view(-1,4)
-
     def __call__(self,data):
         assert ("pooled_bbox" in data), "pooled_bbox should be in data"
         pooled_bbox = data['pooled_bbox']
@@ -595,10 +580,9 @@ class BBoxTransformer:
             pooled_bbox_2 = pooled_bbox_2[mask]
         pooled_bbox = pooled_bbox[mask]
 
-        if self.num_bbox > pooled_bbox.tensor.shape[0]:
-            # random_bbox = self._generate_bbox(self.num_bbox-pooled_bbox.tensor.shape[0], self.bev_range)
-            # pooled_bbox.tensor = torch.cat([pooled_bbox.tensor, random_bbox], dim=0)
-            # raise NotImplementedError("num_bbox currently should be less than pooled_bbox.shape[0]")
+        if self.num_bbox == -1:
+            pass
+        elif self.num_bbox > pooled_bbox.tensor.shape[0]:
             pass
         else:
             idx = torch.randperm(pooled_bbox.tensor.shape[0])[:self.num_bbox]
