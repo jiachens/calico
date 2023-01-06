@@ -28,79 +28,79 @@ def get_world_size():
         return 1
     return dist2.get_world_size()
 
-def all_gather(q, ws, device):
-    """
-    Gathers tensor arrays of different lengths across multiple gpus
+# def all_gather(q, ws, device):
+#     """
+#     Gathers tensor arrays of different lengths across multiple gpus
     
-    Parameters
-    ----------
-        q : tensor array
-        ws : world size
-        device : current gpu device
+#     Parameters
+#     ----------
+#         q : tensor array
+#         ws : world size
+#         device : current gpu device
         
-    Returns
-    -------
-        all_q : list of gathered tensor arrays from all the gpus
+#     Returns
+#     -------
+#         all_q : list of gathered tensor arrays from all the gpus
 
+#     """
+#     local_size = torch.tensor(q.size(), device=device)
+#     all_sizes = [torch.zeros_like(local_size) for _ in range(ws)]
+#     dist2.all_gather(all_sizes, local_size)
+#     max_size = max(all_sizes)
+
+#     size_diff = max_size.item() - local_size.item()
+#     if size_diff:
+#         padding = torch.zeros(size_diff, device=device, dtype=q.dtype)
+#         q = torch.cat((q, padding))
+
+#     all_qs_padded = [torch.zeros_like(q) for _ in range(ws)]
+#     dist2.all_gather(all_qs_padded, q)
+#     all_qs = []
+#     for q, size in zip(all_qs_padded, all_sizes):
+#         all_qs.append(q[:size])
+#     return all_qs
+
+def all_gather(data):
     """
-    local_size = torch.tensor(q.size(), device=device)
-    all_sizes = [torch.zeros_like(local_size) for _ in range(ws)]
-    dist2.all_gather(all_sizes, local_size)
-    max_size = max(all_sizes)
+    Run all_gather on arbitrary picklable data (not necessarily tensors)
+    Args:
+        data: any picklable object
+    Returns:
+        list[data]: list of data gathered from each rank
+    """
+    world_size = get_world_size()
+    if world_size == 1:
+        return [data]
 
-    size_diff = max_size.item() - local_size.item()
-    if size_diff:
-        padding = torch.zeros(size_diff, device=device, dtype=q.dtype)
-        q = torch.cat((q, padding))
+    # serialized to a Tensor
+    buffer = pickle.dumps(data)
+    storage = torch.ByteStorage.from_buffer(buffer)
+    tensor = torch.ByteTensor(storage).to("cuda")
 
-    all_qs_padded = [torch.zeros_like(q) for _ in range(ws)]
-    dist2.all_gather(all_qs_padded, q)
-    all_qs = []
-    for q, size in zip(all_qs_padded, all_sizes):
-        all_qs.append(q[:size])
-    return all_qs
+    # obtain Tensor size of each rank
+    local_size = torch.LongTensor([tensor.numel()]).to("cuda")
+    size_list = [torch.LongTensor([0]).to("cuda") for _ in range(world_size)]
+    dist2.all_gather(size_list, local_size)
+    size_list = [int(size.item()) for size in size_list]
+    max_size = max(size_list)
 
-# def all_gather(data):
-#     """
-#     Run all_gather on arbitrary picklable data (not necessarily tensors)
-#     Args:
-#         data: any picklable object
-#     Returns:
-#         list[data]: list of data gathered from each rank
-#     """
-#     world_size = get_world_size()
-#     if world_size == 1:
-#         return [data]
+    # receiving Tensor from all ranks
+    # we pad the tensor because torch all_gather does not support
+    # gathering tensors of different shapes
+    tensor_list = []
+    for _ in size_list:
+        tensor_list.append(torch.ByteTensor(size=(max_size,)).to("cuda"))
+    if local_size != max_size:
+        padding = torch.ByteTensor(size=(max_size - local_size,)).to("cuda")
+        tensor = torch.cat((tensor, padding), dim=0)
+    dist2.all_gather(tensor_list, tensor)
 
-#     # serialized to a Tensor
-#     buffer = pickle.dumps(data)
-#     storage = torch.ByteStorage.from_buffer(buffer)
-#     tensor = torch.ByteTensor(storage).to("cuda")
-
-#     # obtain Tensor size of each rank
-#     local_size = torch.LongTensor([tensor.numel()]).to("cuda")
-#     size_list = [torch.LongTensor([0]).to("cuda") for _ in range(world_size)]
-#     dist2.all_gather(size_list, local_size)
-#     size_list = [int(size.item()) for size in size_list]
-#     max_size = max(size_list)
-
-#     # receiving Tensor from all ranks
-#     # we pad the tensor because torch all_gather does not support
-#     # gathering tensors of different shapes
-#     tensor_list = []
-#     for _ in size_list:
-#         tensor_list.append(torch.ByteTensor(size=(max_size,)).to("cuda"))
-#     if local_size != max_size:
-#         padding = torch.ByteTensor(size=(max_size - local_size,)).to("cuda")
-#         tensor = torch.cat((tensor, padding), dim=0)
-#     dist2.all_gather(tensor_list, tensor)
-
-#     data_list = []
-#     for size, tensor in zip(size_list, tensor_list):
-#         buffer = tensor.cpu().numpy().tobytes()[:size]
-#         data_list.append(pickle.loads(buffer).to(torch.cuda.current_device()))
-#     print(data_list)
-#     return data_list
+    data_list = []
+    for size, tensor in zip(size_list, tensor_list):
+        buffer = tensor.cpu().numpy().tobytes()[:size]
+        data_list.append(pickle.loads(buffer).to(torch.cuda.current_device()))
+    print(data_list)
+    return data_list
 
 def gather_features(
         image_features,
@@ -114,8 +114,8 @@ def gather_features(
         all_text_features = hvd.allgather(text_features)
 
     else:#torch.distributed.nn.
-        all_image_features = torch.cat(all_gather(image_features,get_world_size(),torch.cuda.current_device()), dim=0)
-        all_text_features = torch.cat(all_gather(text_features,get_world_size(),torch.cuda.current_device()), dim=0)
+        all_image_features = torch.cat(all_gather(image_features), dim=0)
+        all_text_features = torch.cat(all_gather(text_features), dim=0)
 
     return all_image_features, all_text_features
 
