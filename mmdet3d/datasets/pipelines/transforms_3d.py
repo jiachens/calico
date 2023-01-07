@@ -159,6 +159,7 @@ class GlobalRotScaleTrans:
                 if self.is_pretrain:
                     data["pooled_bbox_2"] = data["pooled_bbox"].clone()
                     data["extra_pooled_bbox_2"] = data["extra_pooled_bbox"].clone()
+
                 pooled_bbox = data["pooled_bbox"]
                 pooled_bbox.rotate(theta)
                 pooled_bbox.translate(translation)
@@ -337,14 +338,14 @@ class RandomFlip3D:
             rotation_2 = np.eye(3)
             if flip_horizontal:
                 rotation_2 = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]]) @ rotation_2
-                data["points"].flip("horizontal")
+                data["points_2"].flip("horizontal")
                 data["pooled_bbox_2"].flip("horizontal")
                 if "extra_pooled_bbox_2" in data:
                     data["extra_pooled_bbox_2"].flip("horizontal")
 
             if flip_vertical:
                 rotation_2 = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]]) @ rotation_2
-                data["points"].flip("vertical")
+                data["points_2"].flip("vertical")
                 data["pooled_bbox_2"].flip("vertical")
                 if "extra_pooled_bbox_2" in data:
                     data["extra_pooled_bbox_2"].flip("vertical")
@@ -615,7 +616,7 @@ class BBoxTransformer:
             if 'pooled_bbox_2' in data:
                 pooled_bbox_2 = pooled_bbox_2[idx]
         
-        print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
+        # print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
         ####FIXME: this is a hack to make the bbox in the right format
         pooled_bbox.rotate(0.5*np.pi)
         pooled_bbox.flip('horizontal')
