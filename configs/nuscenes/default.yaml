@@ -278,12 +278,10 @@ test_pipeline:
     keys:
       - img
       - points
-      - points_2
       - gt_bboxes_3d
       - gt_labels_3d
       - gt_masks_bev
       - pooled_bbox
-      - pooled_bbox_2
     meta_keys:
       - camera_intrinsics
       - camera2ego
@@ -293,7 +291,6 @@ test_pipeline:
       - lidar2image
       - img_aug_matrix
       - lidar_aug_matrix
-      - lidar_aug_matrix_2
 
 data:
   samples_per_gpu: 4
