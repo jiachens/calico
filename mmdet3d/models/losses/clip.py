@@ -29,47 +29,6 @@ def get_world_size():
     return dist2.get_world_size()
 
 
-def all_gather(data):
-    """
-    Run all_gather on arbitrary picklable data (not necessarily tensors)
-    Args:
-        data: any picklable object
-    Returns:
-        list[data]: list of data gathered from each rank
-    """
-    world_size = get_world_size()
-    if world_size == 1:
-        return [data]
-
-    # serialized to a Tensor
-    buffer = pickle.dumps(data)
-    storage = torch.ByteStorage.from_buffer(buffer)
-    tensor = torch.ByteTensor(storage).to("cuda")
-
-    # obtain Tensor size of each rank
-    local_size = torch.LongTensor([tensor.numel()]).to("cuda")
-    size_list = [torch.LongTensor([0]).to("cuda") for _ in range(world_size)]
-    dist2.all_gather(size_list, local_size)
-    size_list = [int(size.item()) for size in size_list]
-    max_size = max(size_list)
-
-    # receiving Tensor from all ranks
-    # we pad the tensor because torch all_gather does not support
-    # gathering tensors of different shapes
-    tensor_list = []
-    for _ in size_list:
-        tensor_list.append(torch.ByteTensor(size=(max_size,)).to("cuda"))
-    if local_size != max_size:
-        padding = torch.ByteTensor(size=(max_size - local_size,)).to("cuda")
-        tensor = torch.cat((tensor, padding), dim=0)
-    dist2.all_gather(tensor_list, tensor)
-
-    data_list = []
-    for size, tensor in zip(size_list, tensor_list):
-        buffer = tensor.cpu().numpy().tobytes()[:size]
-        data_list.append(pickle.loads(buffer))
-    print(data_list)
-    return data_list
 
 def gather_features(
         image_features,
@@ -83,8 +42,8 @@ def gather_features(
         all_text_features = hvd.allgather(text_features)
 
     else:#torch.distributed.nn.
-        all_image_features = torch.cat(all_gather(image_features), dim=0)
-        all_text_features = torch.cat(all_gather(text_features), dim=0)
+        all_image_features = torch.cat(torch.distributed.nn.all_gather(image_features), dim=0)
+        all_text_features = torch.cat(torch.distributed.nn.all_gather(text_features), dim=0)
 
     return all_image_features, all_text_features
 
