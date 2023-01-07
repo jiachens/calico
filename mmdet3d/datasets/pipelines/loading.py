@@ -342,8 +342,8 @@ class LoadPooledBBox:
         """
         h = np.random.uniform(0.5, 5, num_bbox) # empirically chosen height
         w = np.random.uniform(0.5, 5, num_bbox)
-        x1 = np.random.uniform(self.bev_range[0], self.bev_range[2]-5, self.num_bbox)
-        y1 = np.random.uniform(self.bev_range[1], self.bev_range[3]-5, self.num_bbox)
+        x1 = np.random.uniform(self.bev_range[0], self.bev_range[2]-5, num_bbox)
+        y1 = np.random.uniform(self.bev_range[1], self.bev_range[3]-5, num_bbox)
         x2 = x1 + w
         y2 = y1 + h
         bbox = np.stack([x1, y1, x2, y2], axis=1)
