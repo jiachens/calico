@@ -404,8 +404,8 @@ class BEVFusion(Base3DFusionModel):
                     outputs['loss/pretrain/calico_v2l_v2c'] = loss2
 
                     ### cross view loss ####
-                    loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_v1c_v2c'] = loss3
+                    # loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
+                    # outputs['loss/pretrain/calico_v1c_v2c'] = loss3
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feature,normalized_projected_lidar_feature_2, 10.0)
                     outputs['loss/pretrain/calico_v1l_v2l'] = loss4
 
