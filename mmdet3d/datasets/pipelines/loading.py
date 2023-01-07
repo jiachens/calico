@@ -359,7 +359,6 @@ class LoadPooledBBox:
             bbox_path = bbox_path.replace("pcd.bin", "npy")
             bbox = self._load_bbox(bbox_path)
             bbox = BEVBox2D(bbox)
-            print(bbox.tensor.shape[0])
             results['pooled_bbox'] = bbox
             random_bbox = BEVBox2D(self._generate_bbox(self.num_bbox))
             results['extra_pooled_bbox'] = random_bbox
