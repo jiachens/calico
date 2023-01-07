@@ -579,7 +579,7 @@ class BBoxTransformer:
             mask = mask & mask_2
             pooled_bbox_2 = pooled_bbox_2[mask]
         pooled_bbox = pooled_bbox[mask]
-
+        print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
         if self.num_bbox == -1:
             pass
         elif self.num_bbox > pooled_bbox.tensor.shape[0]:
