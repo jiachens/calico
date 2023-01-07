@@ -67,7 +67,7 @@ train_pipeline:
     type: LoadPooledBBox
     method: semantic
     num_bbox: 50
-    bev_range: [-45., -45., 45., 45.]
+    bev_range: [-40., -40., 40., 40.]
   -
     type: LoadPointsFromMultiSweeps
     sweeps_num: 9
