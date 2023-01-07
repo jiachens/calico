@@ -600,11 +600,11 @@ class BBoxTransformer:
             mask = mask & mask_2
             pooled_bbox_2 = pooled_bbox_2[mask]
         pooled_bbox = pooled_bbox[mask]
-        print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
+        # print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
 
         if self.num_bbox > pooled_bbox.tensor.shape[0]:
             idx = torch.randperm(data['extra_pooled_bbox'].tensor.shape[0])[:(self.num_bbox-pooled_bbox.tensor.shape[0])]
-            print(data['extra_pooled_bbox'].tensor.shape)
+            # print(data['extra_pooled_bbox'].tensor.shape)
             add_pooled_bbox = data['extra_pooled_bbox'][idx]
             pooled_bbox.tensor = torch.cat((pooled_bbox.tensor,add_pooled_bbox.tensor),dim=0)
             if 'pooled_bbox_2' in data:
@@ -616,7 +616,7 @@ class BBoxTransformer:
             if 'pooled_bbox_2' in data:
                 pooled_bbox_2 = pooled_bbox_2[idx]
         
-        print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
+        # print(pooled_bbox.tensor.shape,pooled_bbox_2.tensor.shape)
         ####FIXME: this is a hack to make the bbox in the right format
         pooled_bbox.rotate(0.5*np.pi)
         pooled_bbox.flip('horizontal')
