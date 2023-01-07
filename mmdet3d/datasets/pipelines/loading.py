@@ -360,7 +360,7 @@ class LoadPooledBBox:
             bbox = self._load_bbox(bbox_path)
             bbox = BEVBox2D(bbox)
             results['pooled_bbox'] = bbox
-            random_bbox = self._generate_bbox(self.num_bbox)
+            random_bbox = BEVBox2D(self._generate_bbox(self.num_bbox))
             results['extra_pooled_bbox'] = random_bbox
         elif self.method == 'random':
             bbox = BEVBox2D(self._generate_bbox(self.num_bbox))
