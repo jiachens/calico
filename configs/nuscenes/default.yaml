@@ -214,7 +214,7 @@ test_pipeline:
     type: LoadPooledBBox
     method: semantic
     num_bbox: 50
-    bev_range: [-54., -54., 54., 54.]
+    bev_range: [-45., -45., 45., 45.]
   -
     type: LoadPointsFromMultiSweeps
     sweeps_num: 9
@@ -264,7 +264,7 @@ test_pipeline:
   -
     type: BBoxTransformer
     voxel_size: [0.075,0.075]
-    num_bbox: 40
+    num_bbox: 50
     bev_range: [-54., -54., 54., 54.]
   -
     type: ImageNormalize
@@ -283,7 +283,7 @@ test_pipeline:
       - gt_labels_3d
       - gt_masks_bev
       - pooled_bbox
-      - pooled_bbox_@
+      - pooled_bbox_2
     meta_keys:
       - camera_intrinsics
       - camera2ego

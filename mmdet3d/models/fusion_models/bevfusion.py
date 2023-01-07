@@ -406,7 +406,7 @@ class BEVFusion(Base3DFusionModel):
         else:
             outputs = [{} for _ in range(batch_size)]
             if self.pretraining:
-                if self.counter % 50 == 0:
+                if self.counter % 10 == 0:
                     import torchvision
                     gray_scale_1 = torch.sum(features_2[0].squeeze(),0)
                     gray_scale_1 = gray_scale_1 / features_2[0].shape[0]
