@@ -155,7 +155,7 @@ train_pipeline:
   -
     type: BBoxTransformer
     voxel_size: [0.075,0.075]
-    num_bbox: 20
+    num_bbox: 30
     bev_range: [-54., -54., 54., 54.]
   -
     type: ImageNormalize
