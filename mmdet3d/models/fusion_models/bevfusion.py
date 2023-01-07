@@ -349,7 +349,7 @@ class BEVFusion(Base3DFusionModel):
             x = self.decoder["neck"](x)
 
         if self.training:
-            # self.counter = 0
+            self.counter = 0
             outputs = {}
             if self.pretraining:
                 if self.counter % 50 == 0:
