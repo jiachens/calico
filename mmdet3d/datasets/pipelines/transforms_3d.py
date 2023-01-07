@@ -158,11 +158,18 @@ class GlobalRotScaleTrans:
             if "pooled_bbox" in data:
                 if self.is_pretrain:
                     data["pooled_bbox_2"] = data["pooled_bbox"].clone()
+                    data["extra_pooled_bbox_2"] = data["extra_pooled_bbox"].clone()
                 pooled_bbox = data["pooled_bbox"]
                 pooled_bbox.rotate(theta)
                 pooled_bbox.translate(translation)
                 pooled_bbox.scale(scale)
                 data["pooled_bbox"] = pooled_bbox
+
+                extra_pooled_bbox = data["extra_pooled_bbox"]
+                extra_pooled_bbox.rotate(theta)
+                extra_pooled_bbox.translate(translation)
+                extra_pooled_bbox.scale(scale)
+                data["extra_pooled_bbox"] = pooled_bbox
 
                 if self.is_pretrain:
                     pooled_bbox_2 = data["pooled_bbox_2"]
@@ -170,6 +177,12 @@ class GlobalRotScaleTrans:
                     pooled_bbox_2.translate(translation_2)
                     pooled_bbox_2.scale(scale_2)
                     data["pooled_bbox_2"] = pooled_bbox_2
+
+                    extra_pooled_bbox_2 = data["extra_pooled_bbox_2"]
+                    extra_pooled_bbox_2.rotate(theta_2)
+                    extra_pooled_bbox_2.translate(translation_2)
+                    extra_pooled_bbox_2.scale(scale_2)
+                    data["extra_pooled_bbox_2"] = extra_pooled_bbox_2
 
             gt_boxes = data["gt_bboxes_3d"]
             if self.is_pretrain:
@@ -298,6 +311,8 @@ class RandomFlip3D:
                 data["gt_masks_bev"] = data["gt_masks_bev"][:, :, ::-1].copy()
             if "pooled_bbox" in data:
                 data["pooled_bbox"].flip("horizontal")
+            if "extra_pooled_bbox" in data:
+                data["extra_pooled_bbox"].flip("horizontal")
 
         if flip_vertical:
             rotation = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]]) @ rotation
@@ -309,6 +324,8 @@ class RandomFlip3D:
                 data["gt_masks_bev"] = data["gt_masks_bev"][:, ::-1, :].copy()
             if "pooled_bbox" in data:
                 data["pooled_bbox"].flip("vertical")
+            if "extra_pooled_bbox" in data:
+                data["extra_pooled_bbox"].flip("vertical")
 
         data["lidar_aug_matrix"][:3, :] = rotation @ data["lidar_aug_matrix"][:3, :]
 
@@ -322,11 +339,15 @@ class RandomFlip3D:
                 rotation_2 = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]]) @ rotation_2
                 data["points"].flip("horizontal")
                 data["pooled_bbox_2"].flip("horizontal")
+                if "extra_pooled_bbox_2" in data:
+                    data["extra_pooled_bbox_2"].flip("horizontal")
 
             if flip_vertical:
                 rotation_2 = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]]) @ rotation_2
                 data["points"].flip("vertical")
                 data["pooled_bbox_2"].flip("vertical")
+                if "extra_pooled_bbox_2" in data:
+                    data["extra_pooled_bbox_2"].flip("vertical")
 
             data["lidar_aug_matrix_2"][:3, :] = rotation_2 @ data["lidar_aug_matrix_2"][:3, :]
 
@@ -580,10 +601,13 @@ class BBoxTransformer:
             pooled_bbox_2 = pooled_bbox_2[mask]
         pooled_bbox = pooled_bbox[mask]
 
-        if self.num_bbox == -1:
-            pass
-        elif self.num_bbox > pooled_bbox.tensor.shape[0]:
-            pass
+        if self.num_bbox > pooled_bbox.tensor.shape[0]:
+            idx = torch.randperm(data['extra_pooled_bbox'].tensor.shape[0])[:self.num_bbox-pooled_bbox.tensor.shape[0]]
+            add_pooled_bbox = data['extra_pooled_bbox'][idx]
+            pooled_bbox.tensor = torch.cat((pooled_bbox.tensor,add_pooled_bbox.tensor),dim=0)
+            if 'pooled_bbox_2' in data:
+                add_pooled_bbox_2 = data['extra_pooled_bbox_2'][idx]
+                pooled_bbox_2.tensor = torch.cat((pooled_bbox_2.tensor,add_pooled_bbox_2.tensor),dim=0)
         else:
             idx = torch.randperm(pooled_bbox.tensor.shape[0])[:self.num_bbox]
             pooled_bbox = pooled_bbox[idx]

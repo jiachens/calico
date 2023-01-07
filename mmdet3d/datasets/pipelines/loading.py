@@ -359,15 +359,11 @@ class LoadPooledBBox:
             bbox_path = bbox_path.replace("pcd.bin", "npy")
             bbox = self._load_bbox(bbox_path)
             bbox = BEVBox2D(bbox)
-            if self.num_bbox == -1:
-                results['pooled_bbox'] = bbox
-                return results
-            elif self.num_bbox > bbox.tensor.shape[0]:
-                random_bbox = self._generate_bbox(self.num_bbox-bbox.tensor.shape[0])
-                bbox.tensor = torch.cat([bbox.tensor, random_bbox], dim=0)
             results['pooled_bbox'] = bbox
+            random_bbox = self._generate_bbox(self.num_bbox)
+            results['extra_pooled_bbox'] = random_bbox
         elif self.method == 'random':
-            bbox = BEVBox2D(self._generate_bbox())
+            bbox = BEVBox2D(self._generate_bbox(self.num_bbox))
         elif self.method == 'regular':
             raise NotImplementedError
         
