@@ -604,7 +604,7 @@ class BBoxTransformer:
 
         if self.num_bbox > pooled_bbox.tensor.shape[0]:
             idx = torch.randperm(data['extra_pooled_bbox'].tensor.shape[0])[:(self.num_bbox-pooled_bbox.tensor.shape[0])]
-            print(add_pooled_bbox.tensor.shape)
+            print(data['extra_pooled_bbox'].tensor.shape)
             add_pooled_bbox = data['extra_pooled_bbox'][idx]
             pooled_bbox.tensor = torch.cat((pooled_bbox.tensor,add_pooled_bbox.tensor),dim=0)
             if 'pooled_bbox_2' in data:
