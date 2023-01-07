@@ -33,3 +33,6 @@ optimizer:
   type: AdamW
   lr: 1.0e-4
   weight_decay: 0.01
+
+
+load_from: "pretrained/bevfusion-det.pth"
