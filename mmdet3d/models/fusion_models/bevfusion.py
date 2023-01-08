@@ -404,8 +404,8 @@ class BEVFusion(Base3DFusionModel):
                     outputs['loss/pretrain/calico_v2l_v2c'] = loss2
 
                     ### cross view loss ####
-                    # loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
-                    # outputs['loss/pretrain/calico_v1c_v2c'] = loss3
+                    loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
+                    outputs['loss/pretrain/calico_v1c_v2c'] = loss3
                     loss4 = self.pretrain_loss(normalized_projected_lidar_feature,normalized_projected_lidar_feature_2, 10.0)
                     outputs['loss/pretrain/calico_v1l_v2l'] = loss4
 
@@ -433,7 +433,7 @@ class BEVFusion(Base3DFusionModel):
         else:
             outputs = [{} for _ in range(batch_size)]
             if self.pretraining:
-                if self.counter % 50 == 0:
+                if self.counter % 25 == 0:
                     import torchvision
                     gray_scale_1 = torch.sum(features[0].squeeze(),0)
                     gray_scale_1 = gray_scale_1 / features[0].shape[0]
