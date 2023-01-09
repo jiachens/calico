@@ -8,7 +8,7 @@ data:
     dataset:
       ann_file: ${dataset_root + "nuscenes_infos_train_0.05.pkl"}
 
-load_from: "/workspace/jiachen_results/calico_0106/epoch_20_lr_1e-4_local/latest.pth"
+load_from: "/workspace/jiachen_results/calico_0106/epoch_20_lr_1e-4_local_loss/latest.pth"
 
 optimizer:
   type: AdamW
