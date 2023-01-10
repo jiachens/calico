@@ -388,8 +388,8 @@ class BEVFusion(Base3DFusionModel):
                 normalized_projected_camera_feature = F.normalize(projected_camera_feature, p=2, dim=1)
                 ##############################
 
-                loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature, 10.0)
-                outputs['loss/pretrain/calico_v1l_v1c'] = loss1
+                # loss1 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature, 10.0)
+                # outputs['loss/pretrain/calico_v1l_v1c'] = loss1
 
                 if points_2 is not None:
                     roi_lidar_feature_2 = self.roi_align(features_2[1], pooled_bbox_2)
@@ -400,8 +400,8 @@ class BEVFusion(Base3DFusionModel):
                     normalized_projected_lidar_feature_2 = F.normalize(projected_lidar_feature_2, p=2, dim=1)
                     normalized_projected_camera_feature_2 = F.normalize(projected_camera_feature_2, p=2, dim=1)
                     ##############################
-                    loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_v2l_v2c'] = loss2
+                    # loss2 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature_2, 10.0)
+                    # outputs['loss/pretrain/calico_v2l_v2c'] = loss2
 
                     ### cross view loss ####
                     loss3 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_camera_feature_2, 10.0)
@@ -410,10 +410,10 @@ class BEVFusion(Base3DFusionModel):
                     outputs['loss/pretrain/calico_v1l_v2l'] = loss4
 
                     ### cross view-modal loss ####
-                    loss5 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature_2, 10.0)
-                    outputs['loss/pretrain/calico_v1c_v2l'] = loss5
-                    loss6 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature, 10.0)
-                    outputs['loss/pretrain/calico_v2c_v1l'] = loss6
+                    # loss5 = self.pretrain_loss(normalized_projected_camera_feature,normalized_projected_lidar_feature_2, 10.0)
+                    # outputs['loss/pretrain/calico_v1c_v2l'] = loss5
+                    # loss6 = self.pretrain_loss(normalized_projected_camera_feature_2,normalized_projected_lidar_feature, 10.0)
+                    # outputs['loss/pretrain/calico_v2c_v1l'] = loss6
 
             else:
                 for type, head in self.heads.items():

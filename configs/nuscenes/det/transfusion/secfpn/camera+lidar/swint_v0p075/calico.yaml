@@ -25,9 +25,6 @@ model:
 
 data:
   samples_per_gpu: 2
-  # train:
-  #     dataset:
-  #       ann_file: ${dataset_root + "nuscenes_infos_train_0.05.pkl"}
 
 optimizer:
   type: AdamW

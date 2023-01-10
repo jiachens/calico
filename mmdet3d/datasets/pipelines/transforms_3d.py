@@ -155,35 +155,35 @@ class GlobalRotScaleTrans:
                     data["points_2"].translate(translation_2)
                     data["points_2"].scale(scale_2) 
 
-            if "pooled_bbox" in data:
-                if self.is_pretrain:
-                    data["pooled_bbox_2"] = data["pooled_bbox"].clone()
-                    data["extra_pooled_bbox_2"] = data["extra_pooled_bbox"].clone()
+            # if "pooled_bbox" in data:
+            if self.is_pretrain:
+                data["pooled_bbox_2"] = data["pooled_bbox"].clone()
+                data["extra_pooled_bbox_2"] = data["extra_pooled_bbox"].clone()
 
-                pooled_bbox = data["pooled_bbox"]
-                pooled_bbox.rotate(theta)
-                pooled_bbox.translate(translation)
-                pooled_bbox.scale(scale)
-                data["pooled_bbox"] = pooled_bbox
+            pooled_bbox = data["pooled_bbox"]
+            pooled_bbox.rotate(theta)
+            pooled_bbox.translate(translation)
+            pooled_bbox.scale(scale)
+            data["pooled_bbox"] = pooled_bbox
 
-                extra_pooled_bbox = data["extra_pooled_bbox"]
-                extra_pooled_bbox.rotate(theta)
-                extra_pooled_bbox.translate(translation)
-                extra_pooled_bbox.scale(scale)
-                data["extra_pooled_bbox"] = extra_pooled_bbox
+            extra_pooled_bbox = data["extra_pooled_bbox"]
+            extra_pooled_bbox.rotate(theta)
+            extra_pooled_bbox.translate(translation)
+            extra_pooled_bbox.scale(scale)
+            data["extra_pooled_bbox"] = extra_pooled_bbox
 
-                if self.is_pretrain:
-                    pooled_bbox_2 = data["pooled_bbox_2"]
-                    pooled_bbox_2.rotate(theta_2)
-                    pooled_bbox_2.translate(translation_2)
-                    pooled_bbox_2.scale(scale_2)
-                    data["pooled_bbox_2"] = pooled_bbox_2
+            if self.is_pretrain:
+                pooled_bbox_2 = data["pooled_bbox_2"]
+                pooled_bbox_2.rotate(theta_2)
+                pooled_bbox_2.translate(translation_2)
+                pooled_bbox_2.scale(scale_2)
+                data["pooled_bbox_2"] = pooled_bbox_2
 
-                    extra_pooled_bbox_2 = data["extra_pooled_bbox_2"]
-                    extra_pooled_bbox_2.rotate(theta_2)
-                    extra_pooled_bbox_2.translate(translation_2)
-                    extra_pooled_bbox_2.scale(scale_2)
-                    data["extra_pooled_bbox_2"] = extra_pooled_bbox_2
+                extra_pooled_bbox_2 = data["extra_pooled_bbox_2"]
+                extra_pooled_bbox_2.rotate(theta_2)
+                extra_pooled_bbox_2.translate(translation_2)
+                extra_pooled_bbox_2.scale(scale_2)
+                data["extra_pooled_bbox_2"] = extra_pooled_bbox_2
 
             gt_boxes = data["gt_bboxes_3d"]
             if self.is_pretrain:
