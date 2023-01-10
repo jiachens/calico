@@ -293,7 +293,7 @@ class BEVFusion(Base3DFusionModel):
             self.encoders if self.training else list(self.encoders.keys())[::-1]
         ):
             if sensor == "camera":
-                if points_2 is not None:
+                if self.pretraining and points_2 is not None:
                     feature, feature_2 = self.extract_camera_features(
                         img,
                         points,
